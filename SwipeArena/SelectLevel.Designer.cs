@@ -1,14 +1,14 @@
 ﻿namespace SwipeArena
 {
-    partial class Menu
+    partial class SelectLevel
     {
         /// <summary>
-        ///  Required designer variable.
+        /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        ///  Clean up any resources being used.
+        /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
@@ -23,23 +23,37 @@
         #region Windows Form Designer generated code
 
         /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
+            panel1 = new Panel();
             SuspendLayout();
             // 
-            // Menu
+            // panel1
+            // 
+            panel1.AutoScroll = true;
+            panel1.BackColor = Color.FromArgb(128, 64, 64);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(800, 450);
+            panel1.TabIndex = 0;
+            // 
+            // SelectLevel
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(820, 492);
-            Name = "Menu";
-            Text = "SwipeArena: Menu";
+            ClientSize = new Size(800, 450);
+            Controls.Add(panel1);
+            Name = "SelectLevel";
+            Text = "SelectLevel";
             ResumeLayout(false);
         }
 
         #endregion
+
+        private Panel panel1;
     }
 }

@@ -15,6 +15,30 @@ namespace SwipeArena
         public Loading()
         {
             InitializeComponent();
+
+            // Ustawienia formularza
+            Text = "Ładowanie...";
+            Size = new Size(400, 200);
+            FormBorderStyle = FormBorderStyle.None;
+            BackColor = Color.Black;
+            StartPosition = FormStartPosition.CenterScreen;
+
+            // Dodanie etykiety z tekstem "Ładowanie..."
+            var loadingLabel = new Label
+            {
+                Text = "Ładowanie...",
+                Font = new Font("Arial", 16, FontStyle.Bold),
+                ForeColor = Color.White,
+                AutoSize = true,
+                Location = new Point(150, 80)
+            };
+            Controls.Add(loadingLabel);
+
+        }
+
+        private void Loading_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

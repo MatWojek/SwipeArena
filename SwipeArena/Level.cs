@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace SwipeArena
 {
-    public partial class SelectedLevel : Form
+    public partial class Level : Form
     {
-        public SelectedLevel()
+        public Level()
         {
             InitializeComponent();
         }
