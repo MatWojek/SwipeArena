@@ -64,11 +64,11 @@ Plik: `AIHelper.cs`
 
 ---
 
-## 📸 Screenshoty (dodaj, jak będą gotowe)
+## 📸 Screenshoty
 
 ---
 
 ## 👨‍💻 Autor
-Stworzony przez Mateusz Wojciechowski 
+Stworzony przez MatWojek
 Projekt edukacyjno-rozrywkowy w stylu puzzle match-3.
 
