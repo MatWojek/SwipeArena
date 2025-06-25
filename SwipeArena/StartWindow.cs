@@ -9,12 +9,13 @@
         {
             try
             {
+                var settings = new SettingsData();
                 InitializeComponent();
 
                 // Wczytanie ilustracji jako tła
-                if (File.Exists("images/StartWindow.png"))
+                if (File.Exists("images/background/StartWindow.png"))
                 {
-                    backgroundImage = new Bitmap("images/StartWindow.png");
+                    backgroundImage = new Bitmap("images/background/StartWindow.png");
                     BackgroundImage = backgroundImage;
                     BackgroundImageLayout = ImageLayout.Stretch;
                 }
@@ -25,7 +26,7 @@
 
                 // Ustawienia formularza
                 Text = "Ekran Startowy";
-                Size = new Size(800, 600);
+                Size = new Size(settings.Resolution.X, settings.Resolution.Y);
 
                 // Zablokowanie zmiany rozmiaru okna 
                 FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -71,6 +72,11 @@
         {
             // Zamknięcie całej aplikacji
             Application.Exit();
+        }
+
+        private void StartWindow_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

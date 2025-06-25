@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Drawing.Drawing2D;
+
 
 namespace SwipeArena
 {
@@ -15,7 +7,15 @@ namespace SwipeArena
     {
         public SelectLevel()
         {
+
+            var settings = new SettingsData();
+
             InitializeComponent();
+
+            // Ustawienia formularza
+            Text = "Wybieranie Poziomu";
+            Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+            BackgroundImage = null;
             CreateLevelButtons();
 
             // Rejestracja obsługi zamknięcia okna
@@ -35,6 +35,7 @@ namespace SwipeArena
         /// <param name="e"></param>
         private void CreateLevelButtons()
         {
+
             for (int i = 1; i <= levels; i++)
             {
                 Button levelButton = new Button();
@@ -79,7 +80,7 @@ namespace SwipeArena
                 loadingForm.Show();
                 loadingForm.Refresh();
 
-                // Symulacja czasu ładowania (np. 2 sekundy)
+                // Symulacja czasu ładowania \
                 Thread.Sleep(2000);
             }
 
@@ -97,8 +98,8 @@ namespace SwipeArena
         /// </summary>
         private void SelectLevel_Resize(object sender, EventArgs e)
         {
-            int buttonSize = Math.Min(panel1.Width / 10, 100); 
-            int currentMargin = panel1.Height / (levels + 1); 
+            int buttonSize = Math.Min(panel1.Width / 10, 100);
+            int currentMargin = panel1.Height / (levels + 1);
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -106,8 +107,8 @@ namespace SwipeArena
 
                 // Przeliczenie pozycji i rozmiaru
                 levelButton.Size = new Size(buttonSize, buttonSize);
-                int x = (panel1.Width - buttonSize) / 2; 
-                int y = (i + 1) * currentMargin; 
+                int x = (panel1.Width - buttonSize) / 2;
+                int y = (i + 1) * currentMargin;
                 levelButton.Location = new Point(x, y);
 
                 // Aktualizacja kształtu na okrągły

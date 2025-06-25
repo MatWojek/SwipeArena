@@ -4,26 +4,34 @@ namespace SwipeArena
 {
     public partial class Menu : Form
     {
-        Bitmap? backgroundImage; 
+        Bitmap? backgroundImage;
+
+        Button startButton;
+        Button settingsButton;
+        Button exitButton;
+
         public Menu()
         {
             try
             {
+
+                var settings = new SettingsData();
+
                 InitializeComponent();
 
                 // Wczytanie ilustracji jako t³a
-                if (File.Exists("images/Menu.png"))
+                if (File.Exists("images/background/menu.png"))
                 {
-                    backgroundImage = new Bitmap("images/Menu.png");
+                    backgroundImage = new Bitmap("images/background/menu.png");
                 }
                 else
                 {
-                    MessageBox.Show("Image file not found");
+                    MessageBox.Show("Nie znaleziono obrazu");
                 }
 
                 // Ustawienia formularza
                 Text = "Menu G³ówne";
-                Size = new Size(800, 600);
+                Size = new Size(settings.Resolution.X, settings.Resolution.Y);
                 BackgroundImage = null;
                 AddButtons();
 
@@ -40,11 +48,6 @@ namespace SwipeArena
             FormUtils.RegisterFormClosingHandler(this);
 
         }
-
-        Button startButton;
-        Button settingsButton;
-        Button exitButton;
-
 
         /// <summary>
         /// Tworzenie nowych przycisków
@@ -111,7 +114,7 @@ namespace SwipeArena
                 loadingForm.Show();
                 loadingForm.Refresh();
 
-                // Symulacja czasu ³adowania (np. 2 sekundy)
+                // Symulacja czasu ³adowania
                 Thread.Sleep(2000);
             }
 
@@ -136,7 +139,7 @@ namespace SwipeArena
                 loadingForm.Show();
                 loadingForm.Refresh();
 
-                // Symulacja czasu ³adowania (np. 2 sekundy)
+                // Symulacja czasu ³adowania 
                 Thread.Sleep(2000);
             }
 
@@ -163,6 +166,6 @@ namespace SwipeArena
                 e.Graphics.DrawImage(backgroundImage, new Rectangle(0, 0, this.ClientSize.Width, this.ClientSize.Height));
             }
         }
-        
+
     }
 }
