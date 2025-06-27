@@ -90,9 +90,6 @@ namespace SwipeArena
 
     public partial class Settings : Form
     {
-
-        Bitmap? backgroundImage;
-
         Button volumeMusic;
         Button volumeButton;
 
@@ -102,29 +99,53 @@ namespace SwipeArena
 
         Button exitButton;
 
+        Image? volumeOnIcon;
+        Image? volumeOffIcon;
+           
         SettingsData settings = new SettingsData();
 
         public Settings()
         { 
 
             try
-            {
+            { 
+                Icon = new Icon("images/ico/SwipeArenaIcon.ico");
+
                 InitializeComponent();
 
-                // Wczytanie ilustracji jako tła
-                if (File.Exists("images/background/settings.png"))
+                // Asynchroniczne wczytanie ilustracji jako tła
+                Task.Factory.StartNew(() =>
                 {
-                    backgroundImage = new Bitmap("images/background/settings.png");
+                    // Wczytanie obrazu w tle
+                    return Image.FromFile("images/background/settings.png");
+                })
+                .ContinueWith(t =>
+                {
+                    if (t.Exception == null)
+                    {
+                        BackgroundImage = t.Result;
+                        BackgroundImageLayout = ImageLayout.Stretch;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nie udało się wczytać obrazu: " + t.Exception.InnerException?.Message);
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+
+                // Wczytanie ikon głośnika
+                if (File.Exists("images/icons/volume_up.svg") && File.Exists("images/icons/volume_off.svg"))
+                {
+                    volumeOnIcon = Image.FromFile("images/icons/volume_up.svg");
+                    volumeOffIcon = Image.FromFile("images/icons/volume_off.svg");
                 }
                 else
                 {
-                    MessageBox.Show("Nie znaleziono obrazu");
+                    MessageBox.Show("Nie znaleziono ikon głośnika");
                 }
 
                 // Ustawienia formularza
                 Text = "Ustawienia";
                 Size = new Size(settings.Resolution.X, settings.Resolution.Y);
-                BackgroundImage = null;
                 AddButtons();
             }
             catch (Exception ex)
@@ -172,13 +193,13 @@ namespace SwipeArena
                 Size = new Size(40, 40),
                 Location = new Point(510, 300),
                 FlatAppearance = { BorderSize = 0 },
-                BackgroundImage = Image.FromFile(settings.IsVolumeOn ? "images/icons/volume_up.svg" : "images/icons/volume_off.svg"),
+                BackgroundImage = settings.IsVolumeOn ? volumeOnIcon : volumeOffIcon,
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             volumeButton.Click += (s, e) =>
             {
-                settings.IsVolumeOn = !settings.IsVolumeOn; // Przełączanie stanu wyciszenia
-                volumeButton.BackgroundImage = Image.FromFile(settings.IsVolumeOn ? "images/icons/volume_up.svg" : "images/icons/volume_off.svg");
+                settings.IsVolumeOn = !settings.IsVolumeOn;
+                volumeButton.BackgroundImage = settings.IsVolumeOn ? volumeOnIcon : volumeOffIcon;
             };
             Controls.Add(volumeButton);
 
@@ -293,6 +314,5 @@ namespace SwipeArena
         {
 
         }
-
     }     
 }

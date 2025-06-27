@@ -3,8 +3,7 @@ using System.Threading;
 namespace SwipeArena
 {
     public partial class Menu : Form
-    {
-        Bitmap? backgroundImage;
+    { 
 
         Button startButton;
         Button settingsButton;
@@ -14,30 +13,38 @@ namespace SwipeArena
         {
             try
             {
-
                 var settings = new SettingsData();
+
+                Icon = new Icon("images/ico/SwipeArenaIcon.ico");
 
                 InitializeComponent();
 
-                // Wczytanie ilustracji jako t³a
-                if (File.Exists("images/background/menu.png"))
+                // Asynchroniczne wczytanie ilustracji jako t³a
+                Task.Factory.StartNew(() =>
                 {
-                    backgroundImage = new Bitmap("images/background/menu.png");
-                }
-                else
+                    // Wczytanie obrazu w tle
+                    return Image.FromFile("images/background/menu.png");
+                })
+                .ContinueWith(t =>
                 {
-                    MessageBox.Show("Nie znaleziono obrazu");
-                }
+                    if (t.Exception == null)
+                    {
+                        BackgroundImage = t.Result;
+                        BackgroundImageLayout = ImageLayout.Stretch;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nie uda³o siê wczytaæ obrazu: " + t.Exception.InnerException?.Message);
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
 
                 // Ustawienia formularza
                 Text = "Menu G³ówne";
                 Size = new Size(settings.Resolution.X, settings.Resolution.Y);
-                BackgroundImage = null;
                 AddButtons();
 
-                // Zablokowanie zmiany rozmiaru okna 
-                FormBorderStyle = FormBorderStyle.FixedSingle;
-                MaximizeBox = false;
+                AdjustButtonPositions();
+                Resize += (s, e) => AdjustButtonPositions();
             }
             catch (Exception ex)
             {
@@ -62,8 +69,6 @@ namespace SwipeArena
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(66, 197, 230),
                 ForeColor = Color.White,
-                Size = new Size(190, 40),
-                Location = new Point(310, 350),
                 FlatAppearance = { BorderSize = 0 },
                 Font = new Font("Arial", 15, FontStyle.Bold)
             };
@@ -77,8 +82,6 @@ namespace SwipeArena
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(67, 203, 107),
                 ForeColor = Color.White,
-                Size = new Size(190, 40),
-                Location = new Point(310, 425),
                 FlatAppearance = { BorderSize = 0 },
                 Font = new Font("Arial", 15, FontStyle.Bold)
             };
@@ -92,13 +95,35 @@ namespace SwipeArena
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(67, 203, 107),
                 ForeColor = Color.White,
-                Size = new Size(190, 40),
-                Location = new Point(310, 500),
                 FlatAppearance = { BorderSize = 0 },
                 Font = new Font("Arial", 15, FontStyle.Bold)
             };
             exitButton.Click += (s, e) => Close();
+
             Controls.Add(exitButton);
+        }
+
+        /// <summary>
+        /// Ustawienie pozycji przycisków
+        /// </summary>
+        void AdjustButtonPositions()
+        {
+            // Pozycje pionowe (œrodek)
+            int centerX = (ClientSize.Width - startButton.Width) / 2 - 45;
+            int baseY = ClientSize.Height / 2 + 75;
+
+            // Skalowanie przycisku wzglêdem rozmiaru okna
+            int buttonWidth = Math.Max(150, ClientSize.Width / 4);
+            int buttonHeight = Math.Max(40, ClientSize.Height / 15);
+
+            // Przypisz nowy rozmiar i pozycjê
+            startButton.Size = new Size(buttonWidth, buttonHeight);
+            settingsButton.Size = new Size(buttonWidth, buttonHeight);
+            exitButton.Size = new Size(buttonWidth, buttonHeight);
+
+            startButton.Location = new Point(centerX, baseY);
+            settingsButton.Location = new Point(centerX, baseY + 75);
+            exitButton.Location = new Point(centerX, baseY + 150);
         }
 
         /// <summary>
@@ -149,22 +174,6 @@ namespace SwipeArena
 
             // Zamkniêcie bie¿¹cego formularza
             Hide();
-        }
-
-        /// <summary>
-        /// Rysowanie menu
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-
-            // Rysowanie t³a na ca³ym obszarze formularza
-            if (backgroundImage != null)
-            {
-                // Skalowanie obrazu
-                e.Graphics.DrawImage(backgroundImage, new Rectangle(0, 0, this.ClientSize.Width, this.ClientSize.Height));
-            }
         }
 
     }

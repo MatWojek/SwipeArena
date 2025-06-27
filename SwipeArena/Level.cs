@@ -8,6 +8,14 @@ using System.Windows.Forms;
 // Dodać podświetlnie tego co wybraliśmy (lub takie przybliżenie) 
 // Dodać żeby przesunięcie też było jakoś zasygnalizowane, co ze sobą zamieniliśmy 
 // Dodać, że jak nie ma ruchu to mieszamy poziom
+// Dodanie licznika ruchów
+// Licznik ruchów i licznik połączeń które należy zdobyć zależy od poziomu
+// Dodać przycisk do ustawień i dodać nowe ustawienia gry, 
+// Przycisk cofania 
+// Przycisk powrotu do menu 
+// Progres jest zapisywany, i wyświetlany na ekranie, 
+// Progres to ile poziomów udało się zdobyć
+
 
 namespace SwipeArena
 {
@@ -19,34 +27,104 @@ namespace SwipeArena
         List<IGameElement> gameElements = new List<IGameElement>();
         PictureBox dragged;
 
-        Bitmap? backgroundImage;
+        int xSize = 0;
+        int ySize = 0;
 
-        int xSize = 128;
-        int ySize = 128;
+        int rows = 0;
+        int cols = 0;
 
-        int rows = 3;
-        int cols = 3;
+        int movesLeft;
+        int pointsCollected;
+        int pointsToWin;
+        Label movesLabel;
+        Label pointsLabel;
 
-        public Level()
+        PictureBox firstClicked = null;
+
+        SettingsData settings = new SettingsData();
+
+        DateTime lastMouseDownTime; 
+
+        public Level(int level, int rows, int cols)
         {
             try
             {
+                Icon = new Icon("images/ico/SwipeArenaIcon.ico");
                 InitializeComponent();
 
-                // Wczytanie ilustracji jako tła
-                if (File.Exists("images/background/background.png"))
+                // Asynchroniczne wczytanie ilustracji jako tła
+                Task.Factory.StartNew(() =>
                 {
-                    backgroundImage = new Bitmap("images/background/background.png");
+                    // Wczytanie obrazu w tle
+                    return Image.FromFile("images/background/background.png");
+                })
+                .ContinueWith(t =>
+                {
+                    if (t.Exception == null)
+                    {
+                        BackgroundImage = t.Result;
+                        BackgroundImageLayout = ImageLayout.Stretch;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nie udało się wczytać obrazu: " + t.Exception.InnerException?.Message);
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
+
+                if (rows == 0 || cols == 0)
+                {
+                    MessageBox.Show("Nie można wczytać rozmiaru planszy;");
+                }
+
+                this.rows = rows;
+                this.cols = cols;
+
+                if (rows > 0 && rows < 4)
+                {
+                    xSize = 128;
+                    ySize = 128;
                 }
                 else
                 {
-                    MessageBox.Show("Nie znaleziono obrazu");
+                    xSize = 64;
+                    ySize = 64;
                 }
 
                 // Ustawienia formularza
-                Text = "Level";
-                Size = new Size(800, 600);
-                BackgroundImage = backgroundImage;
+                Text = $"Level {level}";
+                Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+
+                // Ustawienia liczników w zależności od poziomu
+                pointsToWin = level * 10;
+                movesLeft = Math.Max(30 - level, 3);
+                pointsCollected = 0;
+
+                // Dodanie etykiet do wyświetlania liczników
+                movesLabel = new Label
+                {
+                    Text = $"Ruchy do końca: {movesLeft}",
+                    Font = new Font("Arial", 20),
+                    ForeColor = Color.Red,
+                    BackColor = Color.Transparent,
+                    Location = new Point(10, 10),
+                    AutoSize = true
+                };
+
+                pointsLabel = new Label
+                {
+                    Text = $"Punkty: {pointsCollected}/{pointsToWin}",
+                    Font = new Font("Arial", 20),
+                    ForeColor = Color.Red,
+                    BackColor = Color.Transparent,
+                    Location = new Point(10, 50),
+                    AutoSize = true
+                };
+
+                Controls.Add(movesLabel);
+                Controls.Add(pointsLabel);
+
+                movesLabel.BringToFront();
+                pointsLabel.BringToFront();
 
                 GenerateLevel();
                 CenterElements();
@@ -81,50 +159,227 @@ namespace SwipeArena
 
             };
 
-            grid = new IGameElement[rows, cols];
 
-            Random random = new Random();
-
-            for (int y = 0; y < rows; y++)
-            {
-                for (int x = 0; x < cols; x++)
+                grid = new IGameElement[rows, cols];
+                gameElements.Clear();
+                foreach (Control ctrl in Controls.OfType<PictureBox>().ToList())
                 {
-                    IGameElement element = elementTypes[random.Next(elementTypes.Count)];
-                    grid[y, x] = element;
-                    gameElements.Add(element);
+                    Controls.Remove(ctrl);
+                    ctrl.Dispose();
+                }
 
-                    PictureBox pic = new PictureBox
+                Random random = new Random();
+
+                for (int y = 0; y < rows; y++)
+                {
+                    for (int x = 0; x < cols; x++)
                     {
-                        Image = element.Icon,
-                        Size = new Size(xSize, ySize),
-                        Location = new Point(x * xSize, y * ySize),
-                        SizeMode = PictureBoxSizeMode.StretchImage,
-                        Tag = new Point(x, y),
-                        BackColor = Color.Transparent
-                    };
+                        IGameElement element = elementTypes[random.Next(elementTypes.Count)];
+                        grid[y, x] = element;
+                        gameElements.Add(element);
 
-                    // Tworzenie zaokrąglonego regionu
-                    GraphicsPath roundedPath = CreateRoundedRectanglePath(new Rectangle(0, 0, pic.Width, pic.Height), 16);
-                    pic.Region = new Region(roundedPath);
+                        PictureBox pic = new PictureBox
+                        {
+                            Image = element.Icon,
+                            Size = new Size(xSize, ySize),
+                            Location = new Point(x * xSize, y * ySize),
+                            SizeMode = PictureBoxSizeMode.StretchImage,
+                            Tag = new Point(x, y),
+                            BackColor = Color.Transparent
+                        };
 
-                    pic.MouseDown += Pic_MouseDown;
-                    pic.AllowDrop = true;
-                    pic.DragEnter += Pic_DragEnter;
-                    pic.DragDrop += Pic_DragDrop;
+                        // Tworzenie zaokrąglonego regionu
+                        GraphicsPath roundedPath = CreateRoundedRectanglePath(new Rectangle(0, 0, pic.Width, pic.Height), 16);
+                        pic.Region = new Region(roundedPath);
 
-                    pic.MouseEnter += Pic_MouseEnter;
-                    pic.MouseLeave += Pic_MouseLeave;
+                        pic.MouseDown += Pic_MouseDown;
+                        pic.AllowDrop = true;
+                        pic.DragEnter += Pic_DragEnter;
+                        pic.DragDrop += Pic_DragDrop;
 
-                    Controls.Add(pic);
+                        pic.MouseEnter += Pic_MouseEnter;
+                        pic.MouseLeave += Pic_MouseLeave;
+                        pic.Click += Pic_Click;
+                        pic.MouseDown += Pic_MouseDown;
+
+                        Controls.Add(pic);
+
+                        movesLabel.BringToFront();
+                        pointsLabel.BringToFront();
 
                 }
             }
 
             // Sprawdzanie połączeń
             ProcessMatches();
+
+            if (!HasValidMove())
+            {
+                ShuffleBoard();
+            }
+
+            // Sprawdzanie połączeń
+            ProcessMatches();
         }
 
-        private GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
+        /// <summary>
+        /// Kliknięcie jako przesuwanie elementów
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Pic_Click(object sender, EventArgs e)
+        {
+            if (sender is not PictureBox clicked || clicked.Tag is not Point pos2)
+                return;
+
+            if (firstClicked == null)
+            {
+                // Pierwszy klik
+                firstClicked = clicked;
+                firstClicked.BackColor = Color.FromArgb(128, Color.Cyan);
+            }
+            else
+            {
+                // Drugi klik
+                if (firstClicked.Tag is not Point pos1)
+                {
+                    firstClicked.BackColor = Color.Transparent;
+                    firstClicked = null;
+                    return;
+                }
+
+                // Sprawdzenie odległości – czy sąsiadujące
+                int deltaX = Math.Abs(pos1.X - pos2.X);
+                int deltaY = Math.Abs(pos1.Y - pos2.Y);
+
+                if ((deltaX == 1 && deltaY == 0) || (deltaX == 0 && deltaY == 1))
+                {
+                    // Zamiana elementów w gridzie
+                    IGameElement temp = grid[pos1.Y, pos1.X];
+                    grid[pos1.Y, pos1.X] = grid[pos2.Y, pos2.X];
+                    grid[pos2.Y, pos2.X] = temp;
+
+                    // Zamiana obrazków
+                    Image tempImg = firstClicked.Image;
+                    firstClicked.Image = clicked.Image;
+                    clicked.Image = tempImg;
+
+                    // Wywołanie logiki dropa
+                    ProcessMatches();
+                }
+
+                // Resetowanie stanu
+                firstClicked.BackColor = Color.Transparent;
+                firstClicked = null;
+            }
+        }
+
+
+
+        /// <summary>
+        /// Sprawdzenie czy przesunięcie elementu o jedno pole skutkuje matchem
+        /// </summary>
+        /// <returns></returns>
+        bool HasValidMove()
+        {
+            for (int y = 0; y < rows; y++)
+            {
+                for (int x = 0; x < cols; x++)
+                {
+                    // Sprawdzenie ruchu w prawo
+                    if (x < cols - 1 && CanFormMatch(x, y, x + 1, y))
+                        return true;
+
+                    // Sprawdzenie ruchu w dół
+                    if (y < rows - 1 && CanFormMatch(x, y, x, y + 1))
+                        return true;
+                }
+            }
+            return false;
+        }
+        
+        /// <summary>
+        /// Czy jest połączenie na planszy
+        /// </summary>
+        /// <param name="x1"></param>
+        /// <param name="y1"></param>
+        /// <param name="x2"></param>
+        /// <param name="y2"></param>
+        /// <returns></returns>
+        bool CanFormMatch(int x1, int y1, int x2, int y2)
+        {
+            // Zamiana elementów
+            IGameElement temp = grid[y1, x1];
+            grid[y1, x1] = grid[y2, x2];
+            grid[y2, x2] = temp;
+
+            // Sprawdzenie, czy powstało połączenie
+            bool hasMatch = FindMatches().Count > 0;
+
+            // Przywrócenie oryginalnego stanu
+            grid[y2, x2] = grid[y1, x1];
+            grid[y1, x1] = temp;
+
+            return hasMatch;
+        }
+
+
+        /// <summary>
+        /// Tasowanie planszy
+        /// </summary>
+        void ShuffleBoard()
+        {
+            Random random = new Random();
+            List<IGameElement> elements = new List<IGameElement>();
+
+            // Zbieranie wszystkich elementów
+            for (int y = 0; y < rows; y++)
+            {
+                for (int x = 0; x < cols; x++)
+                {
+                    elements.Add(grid[y, x]);
+                }
+            }
+
+            int maxAttempts = 1000;
+            int attempts = 0; 
+
+            do
+            {
+                elements = elements.OrderBy(e => random.Next()).ToList();
+
+                // Przypisanie przetasowanych elementów z powrotem do siatki
+                int index = 0;
+                for (int y = 0; y < rows; y++)
+                {
+                    for (int x = 0; x < cols; x++)
+                    {
+                        grid[y, x] = elements[index];
+                        index++;
+                    }
+                    attempts++;
+                }
+            } while (FindMatches().Count > 0 && attempts > maxAttempts); 
+
+            // Aktualizacja PictureBoxów
+            foreach (Control control in Controls)
+            {
+                if (control is PictureBox pic && pic.Tag is Point position)
+                {
+                    int x = position.X;
+                    int y = position.Y;
+                    pic.Image = grid[y, x].Icon;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Zaokrąglenie elementów
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="radius"></param>
+        /// <returns></returns>
+        GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
         {
             GraphicsPath path = new GraphicsPath();
             int diameter = radius * 2;
@@ -173,6 +428,15 @@ namespace SwipeArena
             }
         }
 
+        void Pic_MouseUp(object sender, MouseEventArgs e)
+        {
+            // Jeśli nie był to przeciąg (krótkie kliknięcie), potraktuj jako klik
+            if (e.Button == MouseButtons.Left && (DateTime.Now - lastMouseDownTime).TotalMilliseconds < 200)
+            {
+                Pic_Click(sender, EventArgs.Empty);
+            }
+        }
+
         /// <summary>
         /// Zmiana stylu obramowania na hover
         /// </summary>
@@ -182,6 +446,7 @@ namespace SwipeArena
             if (pic != null)
             {
                 pic.BorderStyle = BorderStyle.Fixed3D;
+                pic.BackColor = Color.FromArgb(128, Color.Cyan);
             }
         }
 
@@ -194,6 +459,7 @@ namespace SwipeArena
             if (pic != null)
             {
                 pic.BorderStyle = BorderStyle.None;
+                pic.BackColor = Color.Transparent;
             }
         }
 
@@ -202,11 +468,23 @@ namespace SwipeArena
         /// </summary>
         void Pic_MouseDown(object sender, MouseEventArgs e)
         {
+            lastMouseDownTime = DateTime.Now;
+
             dragged = sender as PictureBox;
             if (dragged != null)
+            {
+                dragged.BackColor = Color.White;
                 dragged.DoDragDrop(dragged, DragDropEffects.Move);
+            }
+              
+               
         }
 
+        /// <summary>
+        /// Obsługa podnoszenia elementu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Pic_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
@@ -220,6 +498,12 @@ namespace SwipeArena
         void Pic_DragDrop(object sender, DragEventArgs e)
         {
             PictureBox target = sender as PictureBox;
+            if (dragged != null)
+            {
+                // Przywrócenie oryginalnego wyglądu
+                dragged.BackColor = Color.Transparent;
+            }
+
             if (dragged != null && target != null && dragged != target)
             {
                 Point pos1 = (Point)dragged.Tag;
@@ -229,21 +513,24 @@ namespace SwipeArena
                 int deltaX = Math.Abs(pos1.X - pos2.X);
                 int deltaY = Math.Abs(pos1.Y - pos2.Y);
 
-                // Ruch tylko w pionie lub poziomie
                 if ((deltaX == 1 && deltaY == 0) || (deltaX == 0 && deltaY == 1))
                 {
                     IGameElement temp = grid[pos1.Y, pos1.X];
                     grid[pos1.Y, pos1.X] = grid[pos2.Y, pos2.X];
                     grid[pos2.Y, pos2.X] = temp;
 
-                    Image tempImg = dragged.Image;
-                    dragged.Image = target.Image;
-                    target.Image = tempImg;
+                    // Sprawdzenie, czy ruch tworzy połączenie
+                    if (FindMatches().Count > 0)
+                    {
+                        // Jeśli ruch tworzy połączenie, aktualizujemy obrazy
+                        Image tempImg = dragged.Image;
+                        dragged.Image = target.Image;
+                        target.Image = tempImg;
 
-                    // Sprawdzanie połączeń
-                    ProcessMatches();
+                        // Przetwarzanie połączeń
+                        ProcessMatches();
+                    }
                 }
-
             }
         }
 
@@ -260,10 +547,44 @@ namespace SwipeArena
 
                 if (matches.Count > 0)
                 {
+                    pointsCollected += matches.Count;
+                    pointsLabel.Text = $"Punkty: {pointsCollected}/{pointsToWin}";
+
                     RemoveMatches(matches);
                     hasMatches = true;
                 }
+
+                if (!HasValidMove())
+                {
+                    ShuffleBoard();
+                }
+
             } while (hasMatches);
+
+            // Zmniejszenie liczby ruchów po każdym ruchu
+            movesLeft--;
+            movesLabel.Text = $"Ruchy do końca: {movesLeft}";
+
+            // Sprawdzenie warunków końca gry
+            CheckGameOver();
+        }
+
+
+        /// <summary>
+        /// Sprawdzenie zwycięstwa
+        /// </summary>
+        void CheckGameOver()
+        {
+            if (pointsCollected >= pointsToWin)
+            {
+                MessageBox.Show("You win!");
+                Close(); // Zamknięcie poziomu
+            }
+            else if (movesLeft <= 0)
+            {
+                MessageBox.Show("Game over! Try again.");
+                Close(); // Zamknięcie poziomu
+            }
         }
 
         /// <summary>
@@ -357,6 +678,7 @@ namespace SwipeArena
                             Location = new Point((ClientSize.Width - cols * xSize) / 2 + x * xSize, (ClientSize.Height - rows * ySize) / 2 + y * ySize),
                             SizeMode = PictureBoxSizeMode.StretchImage,
                             Tag = new Point(x, y),
+                            BackColor = Color.Transparent,
                         };
 
                         pic.MouseDown += Pic_MouseDown;
@@ -370,22 +692,6 @@ namespace SwipeArena
                         Controls.Add(pic);
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Rysowanie tła
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-
-            // Rysowanie tła na całym obszarze formularza
-            if (backgroundImage != null)
-            {
-                // Skalowanie obrazu
-                e.Graphics.DrawImage(backgroundImage, new Rectangle(0, 0, ClientSize.Width, ClientSize.Height));
             }
         }
     }

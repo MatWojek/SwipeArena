@@ -34,12 +34,13 @@
             // panel1
             // 
             panel1.AutoScroll = true;
-            panel1.BackColor = Color.FromArgb(128, 64, 64);
+            panel1.BackColor = Color.Transparent;
             panel1.Dock = DockStyle.Fill;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
             panel1.Size = new Size(800, 450);
             panel1.TabIndex = 0;
+            panel1.Paint += panel1_Paint;
             // 
             // SelectLevel
             // 

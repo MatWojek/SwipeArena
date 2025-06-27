@@ -2,28 +2,37 @@
 {
     public partial class StartWindow : Form
     {
-        Bitmap? backgroundImage;
         System.Windows.Forms.Timer transitionTimer;
 
         public StartWindow()
         {
             try
             {
+
+                Icon = new Icon("images/ico/SwipeArenaIcon.ico");
+
                 var settings = new SettingsData();
+
                 InitializeComponent();
 
-                // Wczytanie ilustracji jako tła
-                if (File.Exists("images/background/StartWindow.png"))
+                // Asynchroniczne wczytanie ilustracji jako tła
+                Task.Factory.StartNew(() =>
                 {
-                    backgroundImage = new Bitmap("images/background/StartWindow.png");
-                    BackgroundImage = backgroundImage;
-                    BackgroundImageLayout = ImageLayout.Stretch;
-                }
-                else
+                    // Wczytanie obrazu w tle
+                    return Image.FromFile("images/background/StartWindow.png");
+                })
+                .ContinueWith(t =>
                 {
-                    MessageBox.Show("Image file not found");
-                }
-
+                    if (t.Exception == null)
+                    {
+                        BackgroundImage = t.Result;
+                        BackgroundImageLayout = ImageLayout.Stretch;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nie udało się wczytać obrazu: " + t.Exception.InnerException?.Message);
+                    }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
                 // Ustawienia formularza
                 Text = "Ekran Startowy";
                 Size = new Size(settings.Resolution.X, settings.Resolution.Y);

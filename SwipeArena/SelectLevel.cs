@@ -10,12 +10,33 @@ namespace SwipeArena
 
             var settings = new SettingsData();
 
+            Icon = new Icon("images/ico/SwipeArenaIcon.ico");
+
             InitializeComponent();
+
+            // Asynchroniczne wczytanie ilustracji jako tła
+            Task.Factory.StartNew(() =>
+            {
+                // Wczytanie obrazu w tle
+                return Image.FromFile("images/background/select_level.png");
+            })
+            .ContinueWith(t =>
+            {
+                if (t.Exception == null) 
+                {
+                    panel1.BackgroundImage = t.Result;
+                    panel1.BackgroundImageLayout = ImageLayout.Stretch;
+                }
+                else
+                {
+                    MessageBox.Show("Nie udało się wczytać obrazu: " + t.Exception.InnerException?.Message);
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
 
             // Ustawienia formularza
             Text = "Wybieranie Poziomu";
             Size = new Size(settings.Resolution.X, settings.Resolution.Y);
-            BackgroundImage = null;
+
             CreateLevelButtons();
 
             // Rejestracja obsługi zamknięcia okna
@@ -55,6 +76,7 @@ namespace SwipeArena
                 levelButton.FlatStyle = FlatStyle.Flat;
                 levelButton.FlatAppearance.BorderSize = 0;
                 levelButton.ForeColor = Color.White;
+                levelButton.BackColor = Color.Brown;
 
                 // Przypisanie zdarzenia kliknięcia
                 levelButton.Tag = i;
@@ -80,12 +102,30 @@ namespace SwipeArena
                 loadingForm.Show();
                 loadingForm.Refresh();
 
-                // Symulacja czasu ładowania \
+                // Symulacja czasu ładowania 
                 Thread.Sleep(2000);
             }
 
+            var button = sender as Button;
+            int levelNumber = (int)(button?.Tag ?? 1);
+
+            int rows;
+            int cols;
+
+            // Określenie wielkości planszy na podstawie poziomu
+            if (levelNumber >= 6)
+            {
+                rows = random.Next(4, 8);
+                cols = random.Next(4, 8);
+            }
+            else
+            {
+                rows = random.Next(3, 3 + levelNumber);
+                cols = random.Next(3, 3 + levelNumber);
+            }
+
             // Przejście do Levelu
-            var selectedLevel = new Level();
+            var selectedLevel = new Level(levelNumber, rows, cols);
             selectedLevel.Show();
 
             // Zamknięcie bieżącego formularza
@@ -116,6 +156,11 @@ namespace SwipeArena
                 path.AddEllipse(0, 0, levelButton.Width, levelButton.Height);
                 levelButton.Region = new Region(path);
             }
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
