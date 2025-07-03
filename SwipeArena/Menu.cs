@@ -13,11 +13,13 @@ namespace SwipeArena
         {
             try
             {
-                var settings = new SettingsData();
-
                 Icon = new Icon("images/ico/SwipeArenaIcon.ico");
 
                 InitializeComponent();
+
+                // Zablokowanie zmiany rozmiaru okna
+                FormBorderStyle = FormBorderStyle.FixedSingle;
+                MaximizeBox = false;
 
                 // Asynchroniczne wczytanie ilustracji jako t³a
                 Task.Factory.StartNew(() =>
@@ -40,7 +42,7 @@ namespace SwipeArena
 
                 // Ustawienia formularza
                 Text = "Menu G³ówne";
-                Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+                Size = new Size(SettingsData.Instance.Resolution.X, SettingsData.Instance.Resolution.Y);
                 AddButtons();
 
                 AdjustButtonPositions();

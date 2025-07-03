@@ -35,17 +35,20 @@ namespace SwipeArena
 
             // Ustawienia formularza
             Text = "Wybieranie Poziomu";
-            Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+            Size = new Size(SettingsData.Instance.Resolution.X, SettingsData.Instance.Resolution.Y);
 
             CreateLevelButtons();
+
+            // Zmiana rozmiaru okna
+            panel1.Resize += SelectLevel_Resize;
 
             // Rejestracja obsługi zamknięcia okna
             FormUtils.RegisterFormClosingHandler(this);
         }
 
 
-        int levels = 10;
-        int margin = 100;
+        const int levels = 10;
+        const int margin = 100;
         Random random = new Random();
         List<Button> levelButtons = new List<Button>();
 
@@ -76,7 +79,7 @@ namespace SwipeArena
                 levelButton.FlatStyle = FlatStyle.Flat;
                 levelButton.FlatAppearance.BorderSize = 0;
                 levelButton.ForeColor = Color.White;
-                levelButton.BackColor = Color.Brown;
+                levelButton.BackColor = Color.FromArgb(230, 191, 70);
 
                 // Przypisanie zdarzenia kliknięcia
                 levelButton.Tag = i;
@@ -139,16 +142,22 @@ namespace SwipeArena
         private void SelectLevel_Resize(object sender, EventArgs e)
         {
             int buttonSize = Math.Min(panel1.Width / 10, 100);
-            int currentMargin = panel1.Height / (levels + 1);
+            int currentMargin = panel1.Height / (levels + 1) + margin;
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
                 Button levelButton = levelButtons[i];
 
-                // Przeliczenie pozycji i rozmiaru
+                // Przeliczenie rozmiaru przycisku
                 levelButton.Size = new Size(buttonSize, buttonSize);
-                int x = (panel1.Width - buttonSize) / 2;
-                int y = (i + 1) * currentMargin;
+
+                // Losowe przesunięcie w granicach 10 pikseli
+                int randomOffsetX = random.Next(-50, 50); 
+                int randomOffsetY = random.Next(-50, 50);
+
+                // Przeliczenie pozycji
+                int x = (panel1.Width - buttonSize) / 2 + randomOffsetX;
+                int y = (i + 1) * currentMargin + randomOffsetY;
                 levelButton.Location = new Point(x, y);
 
                 // Aktualizacja kształtu na okrągły
@@ -156,11 +165,6 @@ namespace SwipeArena
                 path.AddEllipse(0, 0, levelButton.Width, levelButton.Height);
                 levelButton.Region = new Region(path);
             }
-        }
-
-        private void panel1_Paint(object sender, PaintEventArgs e)
-        {
-
         }
     }
 }
