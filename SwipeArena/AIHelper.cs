@@ -38,7 +38,7 @@ namespace SwipeArena
             while (true)
             {
                 var bestMove = SuggestBestMove(board);
-                if (bestMove == (-1, -1, -1, -1)) break; // Brak możliwych ruchów
+                if (bestMove == (-1, -1, -1, -1)) break; 
                 ExecuteMove(board, bestMove);
             }
         }
@@ -97,9 +97,19 @@ namespace SwipeArena
         /// </summary>
         /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
         /// <param name="move">Ruch do wykonania.</param>
-        private void ExecuteMove(int[,] board, (int startX, int startY, int endX, int endY) move)
+        void ExecuteMove(int[,] board, (int startX, int startY, int endX, int endY) move)
         {
-            // Implementacja logiki wykonania ruchu
+            // Pobierz współrzędne ruchu
+            int startX = move.startX;
+            int startY = move.startY;
+            int endX = move.endX;
+            int endY = move.endY;
+
+            // Zamień wartości w tablicy
+            int temp = board[startY, startX];
+            board[startY, startX] = board[endY, endX];
+            board[endY, endX] = temp;
+
         }
     }
 }

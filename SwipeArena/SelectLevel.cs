@@ -7,7 +7,6 @@ namespace SwipeArena
     {
         public SelectLevel()
         {
-
             var settings = new SettingsData();
 
             Icon = new Icon("images/ico/SwipeArenaIcon.ico");

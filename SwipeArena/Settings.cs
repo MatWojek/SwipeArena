@@ -16,13 +16,14 @@ using System.Windows.Forms;
 // Będzie zmiana rozdzielczości przez którą użytkownik będzie mógł zmienić rozmiar okna i automatycznie będzie się wszystko ustawiać
 // W pliku settings, będą wszystkie ustawienia związane z rozmiarem okna, z ustawieniami głośności, będą one również zapisywane do pliku
 // Zapis gry i ustawień w jsonie
+// Zapisz powoduje przejście do ostatniego otwartego okna
 
 namespace SwipeArena
 {
     public class SettingsData
     {
-        private static readonly string SettingsFile = "settings.json";
-        private static SettingsData? _instance;
+        static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "settings.json");
+        static SettingsData? _instance;
 
         // Właściwości ustawień
         public Point Resolution { get; set; } = new Point(800, 600);
@@ -52,7 +53,7 @@ namespace SwipeArena
         /// Wczytywanie ustawień z pliku
         /// </summary>
         /// <returns></returns>
-        private static SettingsData LoadFromFile()
+        static SettingsData LoadFromFile()
         {
             if (File.Exists(SettingsFile))
             {
@@ -103,6 +104,8 @@ namespace SwipeArena
         Button saveButton;
         Button helpButton;
 
+        Panel panelSettings;
+
         Button exitButton;
 
         Image? volumeOnIcon;
@@ -127,7 +130,7 @@ namespace SwipeArena
                 Task.Factory.StartNew(() =>
                 {
                     // Wczytanie obrazu w tle
-                    return Image.FromFile("images/background/settings.png");
+                    return Image.FromFile("images/background/settingsImage.png");
                 })
                 .ContinueWith(t =>
                 {
@@ -157,6 +160,15 @@ namespace SwipeArena
                 Text = "Ustawienia";
                 Size = new Size(SettingsData.Instance.Resolution.X, SettingsData.Instance.Resolution.Y);
 
+                // Tworzenie panelu ustawień 
+                panelSettings = new Panel
+                {
+                    BackColor = Color.FromArgb(240, 240, 240),
+                    Size = new Size(ClientSize.Width - 40, ClientSize.Height - 40),
+                    Location = new Point(20, 20)
+                };
+                Controls.Add(panelSettings);
+
                 AddButtons();
                 UpdateButtonPositions();
             }
@@ -183,20 +195,20 @@ namespace SwipeArena
                 Font = new Font("Arial", 20, FontStyle.Bold),
                 ForeColor = Color.Black,
                 AutoSize = true,
-                Location = new Point(ClientSize.Width / 2 - 100, 20) // Wyśrodkowanie
+                Location = new Point(ClientSize.Width / 2 - 100, 20) 
             };
-            Controls.Add(titleLabel);
+            panelSettings.Controls.Add(titleLabel);
 
             // Dodanie napisu "Zmiana głośności"
             var volumeLabel = new Label
             {
-                Text = "Zmiana głośności",
+                Text = $"Zmiana głośności [{Math.Round(settings.Volume * 100)}%]",
                 Font = new Font("Arial", 12, FontStyle.Regular),
                 ForeColor = Color.Black,
                 AutoSize = true,
                 Location = new Point(ClientSize.Width / 2 - 100, ClientSize.Height / 3 - 50)
             };
-            Controls.Add(volumeLabel);
+            panelSettings.Controls.Add(volumeLabel);
 
             // Suwak do ustawiania głośności muzyki
             var volumeMusic = new TrackBar
@@ -213,6 +225,7 @@ namespace SwipeArena
             volumeMusic.Scroll += (s, e) =>
             {
                 settings.Volume = volumeMusic.Value / 100.0;
+                volumeLabel.Text = $"Zmiana głośności [{Math.Round(settings.Volume * 100)}%]";
 
                 // Zmiana ikony w zależności od poziomu głośności
                 if (settings.Volume == 0)
@@ -228,7 +241,7 @@ namespace SwipeArena
                     volumeButton.BackgroundImage = Image.FromFile("images/icons/dark_volume_up.png");
                 }
             };
-            Controls.Add(volumeMusic);
+            panelSettings.Controls.Add(volumeMusic);
 
             // Przycisk Ustawień Muzyki
             volumeButton = new Button
@@ -259,7 +272,7 @@ namespace SwipeArena
                     volumeButton.BackgroundImage = Image.FromFile("images/icons/dark_volume_mute.png");
                 }
             };
-            Controls.Add(volumeButton);
+            panelSettings.Controls.Add(volumeButton);
 
             // Lista rozwijana zmiany rozdzielczości 
 
@@ -299,7 +312,7 @@ namespace SwipeArena
                 Size = new Size(settings.Resolution.X, settings.Resolution.Y);
                 UpdateButtonPositions();
             };
-            Controls.Add(changeResolution);
+            panelSettings.Controls.Add(changeResolution);
 
             // Przycisk Zresetuj
             resetButton = new Button
@@ -314,7 +327,7 @@ namespace SwipeArena
                 Font = new Font("Arial", 15, FontStyle.Bold)
             };
             resetButton.Click += ResetButton_Click;
-            Controls.Add(resetButton);
+            panelSettings.Controls.Add(resetButton);
 
             // Przycisk Zapisz
             var saveButton = new Button
@@ -329,7 +342,7 @@ namespace SwipeArena
                 Font = new Font("Arial", 15, FontStyle.Bold)
             };
             saveButton.Click += SaveButton_Click;
-            Controls.Add(saveButton);
+            panelSettings.Controls.Add(saveButton);
 
             // Przycisk Pomocy
             helpButton = new Button
@@ -344,7 +357,7 @@ namespace SwipeArena
                 Font = new Font("Arial", 15, FontStyle.Bold)
             };
             helpButton.Click += HelpButton_Click;
-            Controls.Add(helpButton);
+            panelSettings.Controls.Add(helpButton);
 
             // Przycisk Wyjście
             exitButton = new Button
@@ -359,22 +372,26 @@ namespace SwipeArena
                 Font = new Font("Arial", 15, FontStyle.Bold)
             };
             exitButton.Click += ExitButton_Click;
-            Controls.Add(exitButton);
+            panelSettings.Controls.Add(exitButton);
 
         }
 
         /// <summary>
         /// Aktualizuje pozycje przycisków na podstawie rozmiaru okna.
         /// </summary>
-        private void UpdateButtonPositions()
+        void UpdateButtonPositions()
         {
-            // Wyśrodkowanie przycisków i elementów na podstawie rozmiaru okna
-            volumeButton.Location = new Point(ClientSize.Width / 2 + 150, ClientSize.Height / 3);
-            changeResolution.Location = new Point(ClientSize.Width / 2 - 150, ClientSize.Height / 2);
-            resetButton.Location = new Point(ClientSize.Width / 2 - 200, ClientSize.Height - 150);
-            saveButton.Location = new Point(ClientSize.Width / 2 + 50, ClientSize.Height - 150);
-            helpButton.Location = new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 100);
-            exitButton.Location = new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 50);
+            // Wyśrodkowanie przycisków i elementów na podstawie rozmiaru panelu
+            foreach (Control control in panelSettings.Controls)
+            {
+                if (control is Button button)
+                {
+                    button.Location = new Point(
+                        panelSettings.Width / 2 - button.Width / 2,
+                        button.Location.Y
+                    );
+                }
+            }
         }
 
         /// <summary>

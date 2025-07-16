@@ -25,7 +25,7 @@ namespace SwipeArena
                 Task.Factory.StartNew(() =>
                 {
                     // Wczytanie obrazu w tle
-                    return Image.FromFile("images/background/menu.png");
+                    return Image.FromFile("images/background/menuImage.png");
                 })
                 .ContinueWith(t =>
                 {
@@ -47,16 +47,16 @@ namespace SwipeArena
 
                 AdjustButtonPositions();
                 Resize += (s, e) => AdjustButtonPositions();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}");
+        }
 
             // Rejestracja obs³ugi zamkniêcia okna
             FormUtils.RegisterFormClosingHandler(this);
 
-        }
+    }
 
         /// <summary>
         /// Tworzenie nowych przycisków
@@ -111,7 +111,7 @@ namespace SwipeArena
         void AdjustButtonPositions()
         {
             // Pozycje pionowe (œrodek)
-            int centerX = (ClientSize.Width - startButton.Width) / 2 - 45;
+            int centerX = (ClientSize.Width - startButton.Width) / 2 - startButton.Width;
             int baseY = ClientSize.Height / 2 + 75;
 
             // Skalowanie przycisku wzglêdem rozmiaru okna
