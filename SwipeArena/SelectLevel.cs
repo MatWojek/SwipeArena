@@ -3,13 +3,13 @@
 
 namespace SwipeArena
 {
-    public partial class SelectLevel : Form
+    public partial class SelectLevel : BaseForm
     {
+
+        Button settingsButton; 
+
         public SelectLevel()
         {
-            var settings = new SettingsData();
-
-            Icon = new Icon("images/ico/SwipeArenaIcon.ico");
 
             InitializeComponent();
 
@@ -33,8 +33,16 @@ namespace SwipeArena
             }, TaskScheduler.FromCurrentSynchronizationContext());
 
             // Ustawienia formularza
-            Text = "Wybieranie Poziomu";
-            Size = new Size(SettingsData.Instance.Resolution.X, SettingsData.Instance.Resolution.Y);
+            SettingsHelper.ApplySettings(this, "Wybierz poziom");
+
+            settingsButton = new Button
+            {
+                Text = "Ustawienia",
+                Size = new Size(100, 30),
+                Location = new Point(10, 100)
+            };
+            settingsButton.Click += (s, e) => { new Settings().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
+            Controls.Add(settingsButton);
 
             CreateLevelButtons();
 

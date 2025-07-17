@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 
 namespace SwipeArena
 {
-    internal class BasicSettings
+    /// <summary>
+    /// Klasa z podstawowymi ustawieniami
+    /// </summary>
+    public static class BasicSettings
     {
-
-        public const string Font = "Arial";
-        public const int FontSize = 20;
+        public static string FontFamily { get; } = "Arial";
+        public static int FontSize { get; } = 15; 
 
     }
 

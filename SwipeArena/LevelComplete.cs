@@ -11,7 +11,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace SwipeArena
 {
-    public partial class LevelComplete : Form
+    public partial class LevelComplete : BaseForm
     {
 
         Button exitLevelButton;
@@ -26,48 +26,16 @@ namespace SwipeArena
         {
             try
             {
-                Icon = new Icon("images/ico/SwipeArenaIcon.ico");
-
-                InitializeComponent();
-
-                // Zablokowanie zmiany rozmiaru okna
-                FormBorderStyle = FormBorderStyle.FixedSingle;
-                MaximizeBox = false;
-
-                // Asynchroniczne wczytanie ilustracji jako tła
-                Task.Factory.StartNew(() =>
-                {
-                    // Wczytanie obrazu w tle
-                    return Image.FromFile("images/background/game_over.png");
-                })
-                .ContinueWith(t =>
-                {
-                    if (t.Exception == null)
-                    {
-                        BackgroundImage = t.Result;
-                        BackgroundImageLayout = ImageLayout.Stretch;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Nie udało się wczytać obrazu: " + t.Exception.InnerException?.Message);
-                    }
-                }, TaskScheduler.FromCurrentSynchronizationContext());
-
                 // Ustawienia formularza
-                Text = "Menu Główne";
-                Size = new Size(SettingsData.Instance.Resolution.X, SettingsData.Instance.Resolution.Y);
-                AddButtons();
+                LoadBackgroundImage("images/background/level_complete.png");
+                SettingsHelper.ApplySettings(this, "Wygrałeś!!!");
 
-                AdjustButtonPositions();
-                Resize += (s, e) => AdjustButtonPositions();
+                AddButtons();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error: {ex.Message}");
             }
-
-            // Rejestracja obsługi zamknięcia okna
-            FormUtils.RegisterFormClosingHandler(this);
         }
 
         /// <summary>
@@ -76,71 +44,68 @@ namespace SwipeArena
         void AddButtons()
         {
             // Przycisk Restart
-            restartLevelButton = new Button
-            {
-                Text = "Restart",
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(66, 197, 230),
-                ForeColor = Color.White,
-                FlatAppearance = { BorderSize = 0 },
-                Font = new Font("Arial", 15, FontStyle.Bold)
-            };
+            restartLevelButton = UIHelper.CreateButton(
+                title: "Restart",
+                text: "Restart",
+                backColor: Color.FromArgb(66, 197, 230),
+                foreColor: Color.White,
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize
+                );
             restartLevelButton.Click += RestartButton_Click;
             Controls.Add(restartLevelButton);
 
-            menuButton = new Button
-            {
-                Text = "Restart",
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(66, 197, 230),
-                ForeColor = Color.White,
-                FlatAppearance = { BorderSize = 0 },
-                Font = new Font("Arial", 15, FontStyle.Bold)
-            };
+            menuButton = UIHelper.CreateButton( 
+                title: "MenuButton", 
+                text: "Wyjdź do Menu",
+                backColor: Color.FromArgb(66, 197, 230),
+                foreColor: Color.White,
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize
+            );
             menuButton.Click += MenuButton_Click;
             Controls.Add(menuButton);
 
             // Przycisk NextLevel
-            nextLevelButton = new Button
-            {
-                Text = "Ustawienia",
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(67, 203, 107),
-                ForeColor = Color.White,
-                FlatAppearance = { BorderSize = 0 },
-                Font = new Font("Arial", 15, FontStyle.Bold)
-            };
+            nextLevelButton = UIHelper.CreateButton(
+                title: "NextLevelButton",
+                text: "Następny",
+                backColor: Color.FromArgb(66, 197, 230),
+                foreColor: Color.White,
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize
+                );
             nextLevelButton.Click += NextButton_Click;
             Controls.Add(nextLevelButton);
 
             // Przycisk Ustawienia
-            settingsButton = new Button
-            {
-                Text = "Ustawienia",
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(67, 203, 107),
-                ForeColor = Color.White,
-                FlatAppearance = { BorderSize = 0 },
-                Font = new Font("Arial", 15, FontStyle.Bold)
-            };
+            settingsButton = UIHelper.CreateButton(
+                title: "Settings",
+                text: "Ustawienia",
+                backColor: Color.FromArgb(66, 197, 230),
+                foreColor: Color.White,
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize
+                );
             settingsButton.Click += SettingsButton_Click;
             Controls.Add(settingsButton);
 
             // Przycisk Wyjście
-            exitLevelButton = new Button
-            {
-                Text = "Wyjście",
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(67, 203, 107),
-                ForeColor = Color.White,
-                FlatAppearance = { BorderSize = 0 },
-                Font = new Font("Arial", 15, FontStyle.Bold)
-            };
+            exitLevelButton = UIHelper.CreateButton(
+                title: "Exit",
+                text: "Wyjście z Gry",
+                backColor: Color.FromArgb(66, 197, 230),
+                foreColor: Color.White,
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize
+                );
             exitLevelButton.Click += (s, e) => Close();
-
             Controls.Add(exitLevelButton);
-        }
 
+            var buttons = new List<Control> {restartLevelButton, menuButton, settingsButton, exitLevelButton};
+            AdjustButtonPositions(buttons);
+
+        }
 
         /// <summary>
         /// Użycie przycisku Menu
@@ -149,22 +114,9 @@ namespace SwipeArena
         /// <param name="e"></param>
         void MenuButton_Click(object sender, EventArgs e)
         {
-            // Wyświetlenie okna ładowania
-            using (var loadingForm = new Loading())
-            {
-                loadingForm.Show();
-                loadingForm.Refresh();
-
-                // Symulacja czasu ładowania
-                Thread.Sleep(2000);
-            }
-
             // Przejście do formularza Menu
             var menuForm = new Menu();
-            menuForm.Show();
-
-            // Zamknięcie bieżącego formularza
-            Hide();
+            NavigateToForm(menuForm);
         }
 
 
@@ -223,47 +175,8 @@ namespace SwipeArena
         /// <param name="e"></param>
         void SettingsButton_Click(object? sender, EventArgs e)
         {
-            // Wyświetlenie okna ładowania
-            using (var loadingForm = new Loading())
-            {
-                loadingForm.Show();
-                loadingForm.Refresh();
-
-                // Symulacja czasu ładowania 
-                Thread.Sleep(2000);
-            }
-
-            // Przejście do formularza Settings
             var settingsForm = new Settings();
-            settingsForm.Show();
-
-            // Zamknięcie bieżącego formularza
-            Hide();
-        }
-
-
-
-        /// <summary>
-        /// Ustawienie pozycji przycisków
-        /// </summary>
-        void AdjustButtonPositions()
-        {
-            // Pozycje pionowe (środek)
-            int centerX = (ClientSize.Width - restartLevelButton.Width) / 2 - restartLevelButton.Width;
-            int baseY = ClientSize.Height / 2 + 75;
-
-            // Skalowanie przycisku względem rozmiaru okna
-            int buttonWidth = Math.Max(150, ClientSize.Width / 4);
-            int buttonHeight = Math.Max(40, ClientSize.Height / 15);
-
-            // Przypisz nowy rozmiar i pozycję
-            restartLevelButton.Size = new Size(buttonWidth, buttonHeight);
-            settingsButton.Size = new Size(buttonWidth, buttonHeight);
-            exitLevelButton.Size = new Size(buttonWidth, buttonHeight);
-
-            restartLevelButton.Location = new Point(centerX, baseY);
-            settingsButton.Location = new Point(centerX, baseY + 75);
-            exitLevelButton.Location = new Point(centerX, baseY + 150);
+            NavigateToForm(settingsForm);
         }
 
     }
