@@ -103,11 +103,12 @@ namespace SwipeArena
                 text: "",
                 backColor: Color.FromArgb(255, 102, 102),
                 foreColor: Color.White,
-                size: new Size(ClientSize.Width / 10, 10),
+                size: new Size(0, 10),
                 location: new Point(ClientSize.Width / 3 + 300, 20),
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
-                fontStyle: FontStyle.Bold
+                fontStyle: FontStyle.Bold,
+                backgroundImage: Image.FromFile("images/icons/light_close.png")
                 );
             panelSettings.Controls.Add(closeSettingsButton);
 

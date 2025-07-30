@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 // TODO:
 // Dodać podświetlnie tego co wybraliśmy (lub takie przybliżenie) (zrobione)  
@@ -19,6 +20,7 @@ namespace SwipeArena
     public partial class Level : BaseForm
     {
 
+        AIHelper ai = new AIHelper();
         List<IGameElement> elementTypes = new();
         IGameElement[,] grid;
         PictureBox firstClicked = null;
@@ -28,7 +30,7 @@ namespace SwipeArena
         int movesLeft, pointsCollected, pointsToWin;
 
         Label movesLabel, pointsLabel;
-        Button settingsButton;
+        Button settingsButton, hintButton;
 
         bool isDragging = false;
         Point mouseDownPos;
@@ -50,6 +52,7 @@ namespace SwipeArena
 
             CreateUI();
             GenerateLevel();
+
             CenterElements();
             Resize += (s, e) => CenterElements();
         }
@@ -205,6 +208,18 @@ namespace SwipeArena
                 location: new Point(10, 50)
                 );
 
+            hintButton = UIHelper.CreateButton(
+                title: "HintButton",
+                text: "Podpowiedź",
+                backColor: Color.LightBlue,
+                foreColor: Color.Black,
+                size: new Size(100, 30),
+                location: new Point(10, 140),
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize
+            );
+            hintButton.Click += HintButton_Click;
+
             settingsButton = UIHelper.CreateButton(
                 title: "Settings",
                 text: "Ustawienia",
@@ -217,8 +232,43 @@ namespace SwipeArena
                 fontStyle: FontStyle.Bold
                 );
             settingsButton.Click += (s, e) => { new Settings().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
-            Controls.AddRange(new Control[] { settingsButton, movesLabel, pointsLabel });
+            Controls.AddRange(new Control[] { settingsButton, hintButton, movesLabel, pointsLabel });
         }
+
+        void HintButton_Click(object sender, EventArgs e)
+        {
+            var bestMove = ai.SuggestBestMove(grid);
+            if (bestMove.startX != -1)
+            {
+                HighlightHint(bestMove);
+            }
+        }
+
+        void HighlightHint((int startX, int startY, int endX, int endY) move)
+        {
+            foreach (PictureBox pic in Controls.OfType<PictureBox>())
+            {
+                if (pic.Tag is Point pos &&
+                    (pos == new Point(move.startX, move.startY) || pos == new Point(move.endX, move.endY)))
+                {
+                    pic.BackColor = Color.Yellow;
+                }
+            }
+
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000;
+            timer.Tick += (s, e) =>
+            {
+                foreach (PictureBox pic in Controls.OfType<PictureBox>())
+                {
+                    if (pic.BackColor == Color.Yellow)
+                        pic.BackColor = Color.Transparent;
+                }
+                timer.Stop();
+            };
+            timer.Start();
+        }
+
 
 
         /// <summary>
@@ -540,10 +590,7 @@ namespace SwipeArena
             {
                 // Przejście do formularza LevelComplete
                 var levelComplete = new LevelComplete();
-                levelComplete.Show();
-
-                // Zamknięcie bieżącego formularza
-                Hide();
+                NavigateToForm(levelComplete);
             }
 
             // Przegranie w poziomie 
@@ -551,10 +598,7 @@ namespace SwipeArena
             {
                 // Przejście do formularza GameOver 
                 var gameOver = new GameOver();
-                gameOver.Show();
-
-                // Zamknięcie bieżącego formularza
-                Hide();
+                NavigateToForm(gameOver);
             }
         }
 

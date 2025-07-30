@@ -37,20 +37,36 @@ namespace SwipeArena
             System.Drawing.Image? backgroundImage = null
             )
         {
-
-            return new Button
+            try
             {
-                Text = text,
-                FlatStyle = FlatStyle.Flat,
-                BackColor = backColor, // Color.FromArgb(67, 203, 107)
-                ForeColor = foreColor, // Color.White
-                Size = size ?? new Size(10, 10),
-                Location = location ?? new Point(0,0),
-                FlatAppearance = { BorderSize = borderSize },
-                Font = new System.Drawing.Font(font, fontSize, fontStyle),
-                BackgroundImage = backgroundImage,
-                BackgroundImageLayout = imageLayout,
-            };
+                return new Button
+                {
+                    Text = text,
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = backColor, // Color.FromArgb(67, 203, 107)
+                    ForeColor = foreColor, // Color.White
+                    Size = size ?? new Size(10, 10),
+                    Location = location ?? new Point(0, 0),
+                    FlatAppearance = { BorderSize = borderSize },
+                    Font = new System.Drawing.Font(font, fontSize, fontStyle),
+                    BackgroundImage = backgroundImage,
+                    BackgroundImageLayout = imageLayout,
+                };
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+
+                return new Button
+                {
+                    Text = "Error",
+                    BackColor = Color.Red,
+                    ForeColor = Color.White,
+                    Size = new Size(100, 50),
+                    Location = new Point(0, 0),
+                };
+            }
+
         }
 
 

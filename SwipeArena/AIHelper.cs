@@ -22,25 +22,10 @@ namespace SwipeArena
         /// </summary>
         /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
         /// <returns>Najlepszy ruch w formacie (startX, startY, endX, endY).</returns>
-        public (int startX, int startY, int endX, int endY) SuggestBestMove(int[,] board)
+        public (int startX, int startY, int endX, int endY) SuggestBestMove(IGameElement[,] board)
         {
             var possibleMoves = FindPossibleMoves(board);
-            var bestMove = EvaluateBestMove(possibleMoves, board);
-            return bestMove;
-        }
-
-        /// <summary>
-        /// Tryb auto-gracza: wykonuje ruchy za gracza.
-        /// </summary>
-        /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
-        public void AutoPlay(int[,] board)
-        {
-            while (true)
-            {
-                var bestMove = SuggestBestMove(board);
-                if (bestMove == (-1, -1, -1, -1)) break; 
-                ExecuteMove(board, bestMove);
-            }
+            return EvaluateBestMove(possibleMoves, board);
         }
 
         /// <summary>
@@ -48,11 +33,48 @@ namespace SwipeArena
         /// </summary>
         /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
         /// <returns>Lista możliwych ruchów.</returns>
-        private List<(int startX, int startY, int endX, int endY)> FindPossibleMoves(int[,] board)
+        private List<(int startX, int startY, int endX, int endY)> FindPossibleMoves(IGameElement[,] board)
         {
-            var moves = new List<(int startX, int startY, int endX, int endY)>();
-            // Implementacja logiki wyszukiwania możliwych ruchów
+            int rows = board.GetLength(0);
+            int cols = board.GetLength(1);
+            var moves = new List<(int, int, int, int)>();
+
+            for (int y = 0; y < rows; y++)
+            {
+                for (int x = 0; x < cols; x++)
+                {
+                    if (x + 1 < cols && CausesMatch(board, x, y, x + 1, y))
+                        moves.Add((x, y, x + 1, y));
+
+                    if (y + 1 < rows && CausesMatch(board, x, y, x, y + 1))
+                        moves.Add((x, y, x, y + 1));
+                }
+            }
+
             return moves;
+        }
+
+        bool CausesMatch(IGameElement[,] board, int x1, int y1, int x2, int y2)
+        {
+            (board[y1, x1], board[y2, x2]) = (board[y2, x2], board[y1, x1]);
+            var result = CheckMatchAt(board, x1, y1) || CheckMatchAt(board, x2, y2);
+            (board[y1, x1], board[y2, x2]) = (board[y2, x2], board[y1, x1]);
+            return result;
+        }
+
+        bool CheckMatchAt(IGameElement[,] board, int x, int y)
+        {
+            string name = board[y, x].Name;
+            int rows = board.GetLength(0);
+            int cols = board.GetLength(1);
+
+            int countH = 1, countV = 1;
+            for (int i = x - 1; i >= 0 && board[y, i].Name == name; i--) countH++;
+            for (int i = x + 1; i < cols && board[y, i].Name == name; i++) countH++;
+            for (int i = y - 1; i >= 0 && board[i, x].Name == name; i--) countV++;
+            for (int i = y + 1; i < rows && board[i, x].Name == name; i++) countV++;
+
+            return countH >= 3 || countV >= 3;
         }
 
         /// <summary>
@@ -61,55 +83,10 @@ namespace SwipeArena
         /// <param name="moves">Lista możliwych ruchów.</param>
         /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
         /// <returns>Najlepszy ruch.</returns>
-        private (int startX, int startY, int endX, int endY) EvaluateBestMove(List<(int startX, int startY, int endX, int endY)> moves, int[,] board)
+        private (int startX, int startY, int endX, int endY) EvaluateBestMove(List<(int startX, int startY, int endX, int endY)> moves, IGameElement[,] board)
         {
-            (int startX, int startY, int endX, int endY) bestMove = (-1, -1, -1, -1);
-            int bestScore = int.MinValue;
-
-            foreach (var move in moves)
-            {
-                int score = CalculateMoveScore(move, board);
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestMove = move;
-                }
-            }
-
-            return bestMove;
-        }
-
-        /// <summary>
-        /// Oblicza wartość punktową dla danego ruchu.
-        /// </summary>
-        /// <param name="move">Ruch do oceny.</param>
-        /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
-        /// <returns>Wartość punktowa ruchu.</returns>
-        private int CalculateMoveScore((int startX, int startY, int endX, int endY) move, int[,] board)
-        {
-            int score = 0;
-            // Implementacja logiki obliczania punktów
-            return score;
-        }
-
-        /// <summary>
-        /// Wykonuje ruch na planszy.
-        /// </summary>
-        /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
-        /// <param name="move">Ruch do wykonania.</param>
-        void ExecuteMove(int[,] board, (int startX, int startY, int endX, int endY) move)
-        {
-            // Pobierz współrzędne ruchu
-            int startX = move.startX;
-            int startY = move.startY;
-            int endX = move.endX;
-            int endY = move.endY;
-
-            // Zamień wartości w tablicy
-            int temp = board[startY, startX];
-            board[startY, startX] = board[endY, endX];
-            board[endY, endX] = temp;
-
+            if (moves.Count == 0) return (-1, -1, -1, -1);
+            return moves[0];
         }
     }
 }

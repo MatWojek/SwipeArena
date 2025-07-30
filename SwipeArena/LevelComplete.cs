@@ -28,7 +28,7 @@ namespace SwipeArena
             {
                 // Ustawienia formularza
                 LoadBackgroundImage("images/background/level_complete.png");
-                SettingsHelper.ApplySettings(this, "Wygrałeś!!!");
+                SettingsHelper.ApplySettings(this, "Wygrana!!!");
 
                 AddButtons();
             }
@@ -118,7 +118,6 @@ namespace SwipeArena
             var menuForm = new Menu();
             NavigateToForm(menuForm);
         }
-
 
         void NextButton_Click(object sender, EventArgs e)
         {
