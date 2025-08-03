@@ -40,31 +40,33 @@ namespace SwipeArena
                 );
                 Controls.Add(panelSettings);
                 infoLabel = UIHelper.CreateLabel(
-                                title: "GameInfoLabel",
-                                text: "🎮 Swipe Arena\n\n" +
-                                       "Swipe Arena to logiczno-przygodowa gra polegająca na przeciąganiu elementów na planszy w celu wykonywania dopasowań, zdobywania punktów oraz pokonywania przeciwników.\n" +
-                                       "🧠 Cel gry:\nZbierz wszystkie wymagane elementy lub pokonaj przeciwników na planszy, wykonując jak najlepsze ruchy logiczne.\n" +
-                                       "🕹️ Jak grać:\n- Kliknij i przeciągnij element, by zamienić go z sąsiednim.\n- Dopasuj 3 lub więcej identycznych elementów w rzędzie lub kolumnie.\n- Używaj mocy specjalnych i planuj swoje ruchy strategicznie.\n\n" +
-                                       "👨‍💻 Autor: Mateusz Wojciechowski\n" +
-                                       "Rok wydania: 2025\n" +
-                                       "Dziękuję za zagranie w Swipe Arena! 💙",
-                                font: BasicSettings.FontFamily,
-                                fontSize: BasicSettings.FontSize,
-                                foreColor: Color.Black,
-                                backColor: Color.Transparent,
-                                location: new Point(ClientSize.Width - 100, ClientSize.Height / 2),
-                                fontStyle: FontStyle.Bold
-                                );
+                    title: "GameInfoLabel",
+                    text: "🎮 Swipe Arena\n\n" +
+                          "Swipe Arena to logiczno-przygodowa gra polegająca na przeciąganiu elementów na planszy w celu wykonywania dopasowań," +
+                          "zdobywania punktów oraz pokonywania przeciwników.\n\n" +
+                          "🧠 Cel gry:\nZdobądź określoną ilość punktów, w odpowiedniej liczbie ruchów.\n\n" +
+                          "🕹️ Jak grać:\n- Kliknij i przeciągnij element, by zamienić go z sąsiednim." +
+                          "\n- Dopasuj 3 lub więcej identycznych elementów w rzędzie lub kolumnie.\n\n" +
+                          "👨‍💻 Autor: Mateusz Wojciechowski\n" +
+                          "Rok wydania: 2025\n" +
+                          "Dziękuję za zagranie w Swipe Arena! 💙",
+                    font: BasicSettings.FontFamily,
+                    fontSize: BasicSettings.FontSize,
+                    foreColor: Color.Black,
+                    backColor: Color.Transparent,
+                    location: new Point(ClientSize.Width - 100, ClientSize.Height / 2),
+                    fontStyle: FontStyle.Bold
+                );
                 panelSettings.Controls.Add(infoLabel);
 
                 // Przycisk Wyjście
                 exitButton = UIHelper.CreateButton(
                     title: "ExitButton",
-                    text: "Wyjdź z Gry",
+                    text: "Wróć do Ustawień",
                     backColor: Color.FromArgb(255, 102, 102),
                     foreColor: Color.White,
                     size: new Size(ClientSize.Width / 3, 40),
-                    location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 50),
+                    location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 200),
                     font: BasicSettings.FontFamily,
                     fontSize: BasicSettings.FontSize,
                     fontStyle: FontStyle.Bold

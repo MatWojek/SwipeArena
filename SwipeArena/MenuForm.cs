@@ -65,8 +65,8 @@ namespace SwipeArena
             // Przycisk Wyjúcie
             exitButton = UIHelper.CreateButton (
                 title: "Exit",
-                text: "Wyjúcie",
-                backColor: Color.FromArgb(67, 203, 107),
+                text: "Wyjdü z Gry",
+                backColor: Color.FromArgb(255, 102, 102),
                 foreColor: Color.White,
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,

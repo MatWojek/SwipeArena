@@ -13,10 +13,7 @@ namespace SwipeArena
     public partial class GameOverForm : BaseForm
     {
 
-        Button exitLevelButton;
-        Button restartLevelButton;
-        Button settingsButton;
-        Button menuButton;
+        Button exitLevelButton, restartLevelButton, menuButton;
 
         Random random = new Random(); 
 
@@ -60,8 +57,8 @@ namespace SwipeArena
 
             menuButton = UIHelper.CreateButton(
                 title: "MenuButton",
-                text: "Wyjdź do Menu",
-                backColor: Color.FromArgb(66, 197, 230),
+                text: "Wróć do Menu",
+                backColor: Color.FromArgb(255, 102, 102),
                 foreColor: Color.White,
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
@@ -69,23 +66,11 @@ namespace SwipeArena
             menuButton.Click += MenuButton_Click;
             Controls.Add(menuButton);
 
-            // Przycisk Ustawienia
-            settingsButton = UIHelper.CreateButton(
-                title: "Settings",
-                text: "Ustawienia",
-                backColor: Color.FromArgb(66, 197, 230),
-                foreColor: Color.White,
-                font: BasicSettings.FontFamily,
-                fontSize: BasicSettings.FontSize
-                );
-            settingsButton.Click += SettingsButton_Click;
-            Controls.Add(settingsButton);
-
             // Przycisk Wyjście
             exitLevelButton = UIHelper.CreateButton(
                 title: "Exit",
-                text: "Wyjście z Gry",
-                backColor: Color.FromArgb(66, 197, 230),
+                text: "Wyjdź z Gry",
+                backColor: Color.FromArgb(255, 102, 102),
                 foreColor: Color.White,
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
@@ -93,7 +78,7 @@ namespace SwipeArena
             exitLevelButton.Click += (s, e) => Close();
             Controls.Add(exitLevelButton);
 
-            var buttons = new List<Control> { restartLevelButton, settingsButton, menuButton, exitLevelButton };
+            var buttons = new List<Control> { restartLevelButton, menuButton, exitLevelButton };
             AdjustButtonPositions(buttons);
         }
 

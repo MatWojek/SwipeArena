@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Drawing.Printing;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
@@ -47,7 +48,7 @@ namespace SwipeArena
 
             currentLevel = level;
             RandomBoardSize(level);
-            xSize = rows < 4 ? 128 : 64;
+            xSize = rows < 8 ? 128 : 96;
             ySize = xSize;
 
             SettingsHelper.ApplySettings(this, $"Level {level}");
@@ -130,7 +131,6 @@ namespace SwipeArena
             }
         }
 
-
         void Pic_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left && dragged != null)
@@ -146,7 +146,6 @@ namespace SwipeArena
                 }
             }
         }
-
 
         /// <summary>
         /// Obsługa podnoszenia elementu
@@ -219,46 +218,50 @@ namespace SwipeArena
                 text: $"Ruchy do końca: {movesLeft}",
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
-                foreColor: Color.Red,
-                backColor: Color.Transparent,
-                location: new Point(10, 10)
-                );
+                foreColor: Color.White,
+                backColor: Color.FromArgb(66, 197, 230),
+                fontStyle: FontStyle.Bold
+                ); 
 
             pointsLabel = UIHelper.CreateLabel(
                 title: "PointsLabel",
                 text: $"Punkty: {pointsCollected}/{pointsToWin}", 
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
-                foreColor: Color.Red, 
-                backColor: Color.Transparent,
-                location: new Point(10, 50)
+                foreColor: Color.White, 
+                backColor: Color.FromArgb(66, 197, 230),
+                fontStyle: FontStyle.Bold  
                 );
 
             hintButton = UIHelper.CreateButton(
                 title: "HintButton",
                 text: "Podpowiedź",
-                backColor: Color.LightBlue,
-                foreColor: Color.Black,
-                size: new Size(100, 30),
-                location: new Point(10, 140),
+                backColor: Color.FromArgb(67, 203, 107),
+                foreColor: Color.White,
+                size: new Size(170, 50),
                 font: BasicSettings.FontFamily,
-                fontSize: BasicSettings.FontSize
+                fontSize: BasicSettings.FontSize,
+                fontStyle: FontStyle.Bold
             );
             hintButton.Click += HintButton_Click;
 
             settingsButton = UIHelper.CreateButton(
                 title: "Settings",
                 text: "Ustawienia",
-                backColor: Color.Transparent,
-                foreColor: Color.Black,
-                size: new Size(100, 30),
-                location: new Point(10, 100),
+                backColor: Color.FromArgb(67, 203, 107),
+                foreColor: Color.White,
+                size: new Size(170, 50),
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
             settingsButton.Click += (s, e) => { new SettingsForm().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
-            Controls.AddRange(new Control[] { settingsButton, hintButton, movesLabel, pointsLabel });
+            Controls.AddRange(new Control[] { movesLabel, pointsLabel, settingsButton, hintButton, });
+
+            var allControls = Controls.Cast<Control>().ToList();
+
+            AdjustControlLayoutForSettingsSmall(allControls);
+
         }
 
         void HintButton_Click(object sender, EventArgs e)
@@ -533,13 +536,20 @@ namespace SwipeArena
         {
             int gridW = cols * xSize, gridH = rows * ySize;
             int startX = (ClientSize.Width - gridW) / 2;
-            int startY = (ClientSize.Height - gridH) / 2;
+
+            // Rzutujemy Controls na IEnumerable<Control>
+            int topUIBottom = Controls
+                .Cast<Control>()
+                .Where(c => !(c is PictureBox))
+                .DefaultIfEmpty()
+                .Max(c => c?.Bottom ?? 0);
+
+            int startY = topUIBottom + 40; // Przesunięcie planszy poniżej UI
 
             foreach (PictureBox pic in Controls.OfType<PictureBox>())
                 if (pic.Tag is Point pos)
                     pic.Location = new Point(startX + pos.X * xSize, startY + pos.Y * ySize);
         }
-
 
         /// <summary>
         /// Tworzy ścieżkę zaokrąglonego prostokąta
@@ -672,7 +682,7 @@ namespace SwipeArena
                 SaveAfterWin();
 
                 // Przejście do formularza LevelComplete
-                var levelComplete = new LevelComplete();
+                var levelComplete = new LevelCompleteForm();
                 NavigateToForm(this, levelComplete);
 
                 return false;

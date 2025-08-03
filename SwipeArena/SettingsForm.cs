@@ -139,9 +139,9 @@ namespace SwipeArena
             var resolutions = new List<Point>
             {
                 new Point(1024, 768),
-                new Point(1174,664),
-                new Point(1280, 720),
-                new Point(1336, 778), 
+                new Point(1174, 778),
+                new Point(1280, 826),
+                new Point(1336, 864), 
                 new Point(1600, 900),
                 new Point(1920, 1080)
             };
@@ -217,10 +217,10 @@ namespace SwipeArena
             statsButton.Click += StatsButton_Click;
             panelSettings.Controls.Add(statsButton);
 
-            // Przycisk Wyjdź do menu
+            // Przycisk Wróć do Menu
             returnToMenuButton = UIHelper.CreateButton(
                 title: "ReturnMenu",
-                text: "Wyjdź do Menu",
+                text: "Wróć do Menu",
                 backColor: Color.FromArgb(255, 102, 102),
                 foreColor: Color.White,
                 size: new Size(ClientSize.Width / 3, 40),
@@ -423,14 +423,17 @@ namespace SwipeArena
             {
 
                 var saveLoad = new SaveLoad();
+
+                saveLoad.Load();
                 saveLoad.Save();
+
                 settings.SaveToFile();
 
-                MessageBox.Show("Postęp został zapisany.", "Zapis postępu", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Postęp i ustawienia zostały zapisane.", "Zapis postępu", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Wystąpił błąd podczas zapisywania postępu: {ex.Message}", "Błąd zapisu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Wystąpił błąd podczas zapisywania postępu i ustawień: {ex.Message}", "Błąd zapisu", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -454,9 +457,10 @@ namespace SwipeArena
         {
             try
             {
-                settings.Resolution = new Point(800, 600);
-                settings.IsVolumeOn = true;
-                settings.Volume = 0.5;
+                settings.Resolution = new Point(BasicSettings.DefaultX, BasicSettings.DefaultY);
+                settings.IsVolumeOn = BasicSettings.DefaultIsVolumeOn;
+                settings.Volume = BasicSettings.DefaultMusicVolume;
+                settings.IsAIEnabled = BasicSettings.DefualtIsAIEnabled;
 
                 // Aktualizacja UI
                 Size = new Size(settings.Resolution.X, settings.Resolution.Y);

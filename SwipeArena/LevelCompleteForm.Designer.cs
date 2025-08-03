@@ -1,6 +1,6 @@
 ﻿namespace SwipeArena
 {
-    partial class LevelComplete
+    partial class LevelCompleteForm
     {
         /// <summary>
         /// Required designer variable.

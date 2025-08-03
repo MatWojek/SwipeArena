@@ -12,16 +12,16 @@ namespace SwipeArena
         static SettingsData? _instance;
 
         // Właściwości ustawień
-        public Point Resolution { get; set; } = new Point(1024, 768);
-        public bool IsVolumeOn { get; set; } = true;
+        public Point Resolution { get; set; } = new Point(BasicSettings.DefaultX, BasicSettings.DefaultY);
+        public bool IsVolumeOn { get; set; } = BasicSettings.DefaultIsVolumeOn;
 
-        double _volume = 0.5;
+        double _volume = BasicSettings.DefaultMusicVolume;
         public double Volume
         {
             get => IsVolumeOn ? _volume : 0;
             set => _volume = value;
         }
-        public bool IsAIEnabled { get; set; } = false; 
+        public bool IsAIEnabled { get; set; } = BasicSettings.DefualtIsAIEnabled; 
 
         static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "settings.json");
 

@@ -90,7 +90,7 @@ namespace SwipeArena
             int fontSize,
             Color foreColor,
             Color backColor,
-            Point location,
+            Point? location = null,
             FontStyle fontStyle = FontStyle.Regular, 
             bool autostart = true
 
@@ -102,7 +102,7 @@ namespace SwipeArena
                 Font = new System.Drawing.Font(font, fontSize),
                 ForeColor = foreColor,
                 BackColor = backColor, 
-                Location = location,
+                Location = location ?? new Point(10, 10),
                 AutoSize = autostart
             };
         }

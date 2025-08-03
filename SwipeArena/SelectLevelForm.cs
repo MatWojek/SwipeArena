@@ -13,6 +13,12 @@ namespace SwipeArena
 
             InitializeComponent();
 
+            // Włącz przewijanie w panelu
+            panel1.AutoScroll = true;
+
+            // Obsługa zdarzenia Scroll
+            panel1.Scroll += Panel1_Scroll;
+
             // Asynchroniczne wczytanie ilustracji jako tła
             Task.Factory.StartNew(() =>
             {
@@ -34,14 +40,14 @@ namespace SwipeArena
 
             // Ustawienia formularza
             SettingsHelper.ApplySettings(this, "Wybierz poziom");
-            
+
             settingsButton = UIHelper.CreateButton(
                 title: "Settings",
                 text: "Ustawienia",
-                backColor: Color.Transparent,
-                foreColor: Color.Black,
-                size: new Size(100, 30),
-                location: new Point(10, 100),
+                backColor: Color.FromArgb(67, 203, 107),
+                foreColor: Color.White,
+                size: new Size(170, 50),
+                location: new Point(ClientSize.Width / 3, 10),
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
@@ -58,6 +64,14 @@ namespace SwipeArena
             FormUtils.RegisterFormClosingHandler(this);
         }
 
+        void Panel1_Scroll(object sender, ScrollEventArgs e)
+        {
+            // Aktualizacja pozycji przycisku "Ustawienia" w zależności od przesunięcia scrolla
+            settingsButton.Location = new Point(
+                settingsButton.Location.X,
+                10 - panel1.AutoScrollPosition.Y
+            );
+        }
 
         const int levels = 15;
         const int margin = 100;
@@ -93,6 +107,7 @@ namespace SwipeArena
                         size: new Size(buttonWidth, buttonHeight),
                         location: new Point(randomX, margin * i),
                         flatStyle: FlatStyle.Flat,
+                        fontStyle: FontStyle.Bold,
                         fontSize: 10
                         );
 
@@ -141,7 +156,6 @@ namespace SwipeArena
             NavigateToForm(this, selectedLevel);
 
         }
-
 
         /// <summary>
         /// Obsługa zmiany rozmiaru okna

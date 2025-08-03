@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -160,18 +161,30 @@ namespace SwipeArena
                 int height = 40;
 
                 // Specjalne rozmiary dla różnych typów
-                if (ctrl is Label)
+                // Specjalne rozmiary dla różnych typów
+                if (ctrl is System.Windows.Forms.Label label)
                 {
-                    width = (int)(ClientSize.Width * 0.6);
-                    height = 30;
-                    ctrl.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
+                    int maxWidth = (ctrl.Parent?.ClientSize.Width ?? ClientSize.Width) - 40;
+                    width = Math.Min((int)(ClientSize.Width * 0.6), maxWidth);
+
+                    label.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
+                    label.AutoSize = false;
+                    label.MaximumSize = new Size(width, 0); 
+                    label.Size = new Size(width, 0);
+                    label.TextAlign = ContentAlignment.MiddleLeft;
+
+                    // Oblicz nową wysokość na podstawie tekstu
+                    Size proposedSize = new Size(width, int.MaxValue);
+                    TextFormatFlags flags = TextFormatFlags.WordBreak;
+                    Size measuredSize = TextRenderer.MeasureText(label.Text, label.Font, proposedSize, flags);
+                    height = measuredSize.Height;
                 }
                 else if (ctrl is TrackBar trackBar)
                 {
                     width = (int)(ClientSize.Width * 0.5);
 
                     // Tworzymy Label dla TrackBara
-                    Label trackBarLabel = new Label();
+                    System.Windows.Forms.Label trackBarLabel = new System.Windows.Forms.Label();
                     trackBarLabel.Text = $"{trackBar.Name}: {trackBar.Value}";
                     trackBarLabel.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1);
                     trackBarLabel.AutoSize = true;
@@ -215,7 +228,7 @@ namespace SwipeArena
             int spacing = 20;
             int currentY = panelPadding;
 
-            int buttonWidth = 200;
+            int buttonWidth = 250;
             int buttonHeight = 50;
             int buttonSpacing = 10;
             int buttonsPerRow = 2;
@@ -229,11 +242,22 @@ namespace SwipeArena
                 int height = 40;
 
                 // Specjalne rozmiary dla różnych typów
-                if (ctrl is Label)
+                if (ctrl is System.Windows.Forms.Label label)
                 {
-                    width = (int)(ClientSize.Width * 0.6);
-                    height = 30;
-                    ctrl.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
+                    int maxWidth = (ctrl.Parent?.ClientSize.Width ?? ClientSize.Width) - 40; 
+                    width = Math.Min((int)(ClientSize.Width * 0.6), maxWidth);
+
+                    label.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
+                    label.AutoSize = false;
+                    label.MaximumSize = new Size(width, 0); 
+                    label.Size = new Size(width, 0);
+                    label.TextAlign = ContentAlignment.MiddleLeft;
+
+                    // Oblicz nową wysokość na podstawie tekstu
+                    Size proposedSize = new Size(width, int.MaxValue);
+                    TextFormatFlags flags = TextFormatFlags.WordBreak;
+                    Size measuredSize = TextRenderer.MeasureText(label.Text, label.Font, proposedSize, flags);
+                    height = measuredSize.Height;
                 }
                 else if (ctrl is ComboBox || ctrl is TrackBar)
                 {
@@ -244,7 +268,7 @@ namespace SwipeArena
                     width = (int)(ClientSize.Width * 0.5);
 
                     // Tworzymy Label dla TrackBara
-                    Label trackBarLabel = new Label();
+                    System.Windows.Forms.Label trackBarLabel = new System.Windows.Forms.Label();
                     trackBarLabel.Text = $"{trackBar.Name}: {trackBar.Value}";
                     trackBarLabel.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1);
                     trackBarLabel.AutoSize = true;
