@@ -52,7 +52,7 @@ namespace SwipeArena
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
                 );
-            restartLevelButton.Click += RestartButton_Click;
+            restartLevelButton.Click += RestartLevelButton_Click;
             Controls.Add(restartLevelButton);
 
             menuButton = UIHelper.CreateButton( 
@@ -75,7 +75,7 @@ namespace SwipeArena
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
                 );
-            nextLevelButton.Click += NextButton_Click;
+            nextLevelButton.Click += NextLevelButton_Click;
             Controls.Add(nextLevelButton);
 
             // Przycisk Ustawienia
@@ -102,7 +102,7 @@ namespace SwipeArena
             exitLevelButton.Click += (s, e) => Close();
             Controls.Add(exitLevelButton);
 
-            var buttons = new List<Control> {restartLevelButton, menuButton, settingsButton, exitLevelButton};
+            var buttons = new List<Control> {nextLevelButton, restartLevelButton, menuButton, settingsButton, exitLevelButton};
             AdjustButtonPositions(buttons);
 
         }
@@ -115,13 +115,20 @@ namespace SwipeArena
         void MenuButton_Click(object sender, EventArgs e)
         {
             // Przejście do formularza Menu
-            var menuForm = new Menu();
-            NavigateToForm(menuForm);
+            var menuForm = new MenuForm();
+            NavigateToForm(this, menuForm);
         }
 
-        void NextButton_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Przejście do kolejnego Levelu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void NextLevelButton_Click(object sender, EventArgs e)
         {
-
+            // Przejście do Levelu
+            var selectedLevel = new LevelForm(LevelForm.currentLevel + 1);
+            NavigateToForm(this, selectedLevel);
         }
 
         /// <summary>
@@ -129,42 +136,12 @@ namespace SwipeArena
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void RestartButton_Click(object sender, EventArgs e)
+        void RestartLevelButton_Click(object sender, EventArgs e)
         {
-            // Wyświetlenie okna ładowania
-            using (var loadingForm = new Loading())
-            {
-                loadingForm.Show();
-                loadingForm.Refresh();
-
-                // Symulacja czasu ładowania 
-                Thread.Sleep(2000);
-            }
-
-            var button = sender as Button;
-            int levelNumber = (int)(button?.Tag ?? 1);
-
-            int rows;
-            int cols;
-
-            // Określenie wielkości planszy na podstawie poziomu
-            if (levelNumber >= 6)
-            {
-                rows = random.Next(4, 8);
-                cols = random.Next(4, 8);
-            }
-            else
-            {
-                rows = random.Next(3, 3 + levelNumber);
-                cols = random.Next(3, 3 + levelNumber);
-            }
-
             // Przejście do Levelu
-            var selectedLevel = new Level(levelNumber, rows, cols);
-            selectedLevel.Show();
+            var selectedLevel = new LevelForm(LevelForm.currentLevel);
+            NavigateToForm(this, selectedLevel);
 
-            // Zamknięcie bieżącego formularza
-            Hide();
         }
 
         /// <summary>
@@ -174,8 +151,8 @@ namespace SwipeArena
         /// <param name="e"></param>
         void SettingsButton_Click(object? sender, EventArgs e)
         {
-            var settingsForm = new Settings();
-            NavigateToForm(settingsForm);
+            var settingsForm = new SettingsForm();
+            NavigateToForm(this, settingsForm);
         }
 
     }

@@ -14,15 +14,17 @@ namespace SwipeArena
     /// <summary>
     /// Zapisywanie i wczytywanie gry
     /// </summary>
-    internal class SaveLoad
+    internal class SaveLoad : ISaveLoad
     {
-
-        const string SaveFilePath = "saveData.json";
+        static readonly string SaveFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "saveData.json");
 
         public int CurrentWinStreak { get; set; } = 0;
-        public int BestWinStreak { get; set; } = 0;
-        public int LastLevelPlayed { get; set; } = 1;
+        public int BestWinStreak { get; set; } = 0; 
+        public int LastLevelPlayed { get; set; } = 0;
+        public int LevelCompleted { get; set; } = 0; 
         public int MaxPoints { get; set; } = 0;
+        public int TotalPoints { get; set; } = 0;
+        public double TimeGame { get; set; } = 0.0;
 
         /// <summary>
         /// Zapisuje postępy do pliku JSON.
@@ -33,8 +35,11 @@ namespace SwipeArena
             {
                 CurrentWinStreak,
                 BestWinStreak,
+                LevelCompleted,
                 LastLevelPlayed,
-                MaxPoints
+                MaxPoints,
+                TotalPoints, 
+                TimeGame
             };
 
             var json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
@@ -54,7 +59,10 @@ namespace SwipeArena
                 CurrentWinStreak = saveData.CurrentWinStreak;
                 BestWinStreak = saveData.BestWinStreak;
                 LastLevelPlayed = saveData.LastLevelPlayed;
+                LevelCompleted = saveData.LevelCompleted; 
                 MaxPoints = saveData.MaxPoints;
+                TotalPoints = saveData.TotalPoints;
+                TimeGame = saveData.TimeGame;
             }
         }
 
@@ -66,7 +74,10 @@ namespace SwipeArena
             CurrentWinStreak = 0;
             BestWinStreak = 0;
             LastLevelPlayed = 1;
+            LevelCompleted = 0;
             MaxPoints = 0;
+            TotalPoints = 0;
+            TimeGame = 0;
 
             // Usunięcie pliku zapisu
             if (File.Exists(SaveFilePath))

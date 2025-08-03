@@ -3,12 +3,12 @@
 
 namespace SwipeArena
 {
-    public partial class SelectLevel : BaseForm
+    public partial class SelectLevelForm : BaseForm
     {
 
-        Button settingsButton; 
+        Button settingsButton, levelButton; 
 
-        public SelectLevel()
+        public SelectLevelForm()
         {
 
             InitializeComponent();
@@ -34,15 +34,20 @@ namespace SwipeArena
 
             // Ustawienia formularza
             SettingsHelper.ApplySettings(this, "Wybierz poziom");
-
-            settingsButton = new Button
-            {
-                Text = "Ustawienia",
-                Size = new Size(100, 30),
-                Location = new Point(10, 100)
-            };
-            settingsButton.Click += (s, e) => { new Settings().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
-            Controls.Add(settingsButton);
+            
+            settingsButton = UIHelper.CreateButton(
+                title: "Settings",
+                text: "Ustawienia",
+                backColor: Color.Transparent,
+                foreColor: Color.Black,
+                size: new Size(100, 30),
+                location: new Point(10, 100),
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize,
+                fontStyle: FontStyle.Bold
+                );
+            settingsButton.Click += (s, e) => { new SettingsForm().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
+            panel1.Controls.Add(settingsButton);
 
             CreateLevelButtons();
 
@@ -54,7 +59,7 @@ namespace SwipeArena
         }
 
 
-        const int levels = 10;
+        const int levels = 15;
         const int margin = 100;
         Random random = new Random();
         List<Button> levelButtons = new List<Button>();
@@ -64,37 +69,59 @@ namespace SwipeArena
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void CreateLevelButtons()
+        void CreateLevelButtons()
         {
 
-            for (int i = 1; i <= levels; i++)
+            SaveLoad save = new SaveLoad();
+            save.Load();
+
+            if (save.LevelCompleted < levels)
             {
-                Button levelButton = new Button();
-                levelButton.Text = "Poziom " + i;
-                levelButton.Size = new Size(100, 100);
+                for (int i = 1; i <= save.LevelCompleted + 1; i++)
+                {
+                    int buttonWidth = 100;
+                    int buttonHeight = 100;
 
-                // Losowa pozycja przycisków w granicach okna
-                int randomX = random.Next(0, panel1.Width - levelButton.Width);
-                levelButton.Location = new Point(randomX, i * margin);
+                    // Losowa pozycja przycisków w granicach okna
+                    int randomX = random.Next(0, Math.Max(1, panel1.Width - buttonWidth));
 
-                // Ustawienie okrągłego kształtu przycisku
-                GraphicsPath path = new GraphicsPath();
-                path.AddEllipse(0, 0, levelButton.Width, levelButton.Height);
-                levelButton.Region = new Region(path);
+                    levelButton = UIHelper.CreateButton(
+                        title: "LevelButton",
+                        text: "Poziom " + i,
+                        backColor: Color.FromArgb(169, 169, 169),
+                        foreColor: Color.White,
+                        size: new Size(buttonWidth, buttonHeight),
+                        location: new Point(randomX, margin * i),
+                        flatStyle: FlatStyle.Flat,
+                        fontSize: 10
+                        );
 
-                // Styl przycisku
-                levelButton.FlatStyle = FlatStyle.Flat;
-                levelButton.FlatAppearance.BorderSize = 0;
-                levelButton.ForeColor = Color.White;
-                levelButton.BackColor = Color.FromArgb(230, 191, 70);
+                    if (save.LevelCompleted + 1 == i)
+                    {
+                        levelButton.BackColor = Color.Red;
+                    }
 
-                // Przypisanie zdarzenia kliknięcia
-                levelButton.Tag = i;
-                levelButton.Click += LevelButton_Click;
+                    else
+                    {
+                        levelButton.BackColor = Color.FromArgb(169, 169, 169);
+                    }
 
-                // Dodanie przycisku do panelu
-                panel1.Controls.Add(levelButton);
-                levelButtons.Add(levelButton);
+                    // Ustawienie okrągłego kształtu przycisku
+                    GraphicsPath path = new GraphicsPath();
+                    path.AddEllipse(0, 0, levelButton.Width, levelButton.Height);
+                    levelButton.Region = new Region(path);
+
+                    // Styl przycisku
+                    levelButton.FlatAppearance.BorderSize = 0;
+
+                    // Przypisanie zdarzenia kliknięcia
+                    levelButton.Tag = i;
+                    levelButton.Click += LevelButton_Click;
+
+                    // Dodanie przycisku do panelu
+                    panel1.Controls.Add(levelButton);
+                    levelButtons.Add(levelButton);
+                }
             }
         }
 
@@ -106,40 +133,13 @@ namespace SwipeArena
         void LevelButton_Click(object sender, EventArgs e)
         {
 
-            // Wyświetlenie okna ładowania
-            using (var loadingForm = new Loading())
-            {
-                loadingForm.Show();
-                loadingForm.Refresh();
-
-                // Symulacja czasu ładowania 
-                Thread.Sleep(2000);
-            }
-
             var button = sender as Button;
             int levelNumber = (int)(button?.Tag ?? 1);
 
-            int rows;
-            int cols;
-
-            // Określenie wielkości planszy na podstawie poziomu
-            if (levelNumber >= 6)
-            {
-                rows = random.Next(4, 8);
-                cols = random.Next(4, 8);
-            }
-            else
-            {
-                rows = random.Next(3, 3 + levelNumber);
-                cols = random.Next(3, 3 + levelNumber);
-            }
-
             // Przejście do Levelu
-            var selectedLevel = new Level(levelNumber, rows, cols);
-            selectedLevel.Show();
+            var selectedLevel = new LevelForm(levelNumber);
+            NavigateToForm(this, selectedLevel);
 
-            // Zamknięcie bieżącego formularza
-            Hide();
         }
 
 

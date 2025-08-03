@@ -1,6 +1,6 @@
 ﻿namespace SwipeArena
 {
-    partial class StartWindow
+    partial class LevelForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,14 +30,13 @@
         {
             SuspendLayout();
             // 
-            // StartWindow
+            // Level
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "StartWindow";
-            Text = "StartWindow";
-            Load += StartWindow_Load;
+            Name = "Level";
+            Text = "SelectedLevel";
             ResumeLayout(false);
         }
 

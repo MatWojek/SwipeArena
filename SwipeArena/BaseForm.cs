@@ -65,10 +65,15 @@ namespace SwipeArena
         /// Przejście do kolejnego okna
         /// </summary>
         /// <param name="nextForm"></param>
-        protected void NavigateToForm(Form nextForm)
+        protected void NavigateToForm(Form thisForm, Form nextForm)
         {
-            using (var loadingForm = new Loading())
+            using (var loadingForm = new LoadingForm())
             {
+                if (nextForm == new MenuForm())
+                {
+                    formHistory.Clear();
+                }
+                formHistory.Push(thisForm);
                 loadingForm.Show();
                 loadingForm.Refresh();
                 Thread.Sleep(60); // Symulacja ładowania
@@ -110,7 +115,7 @@ namespace SwipeArena
         }
 
         /// <summary>
-        /// Ustawienie pozycji i rozmiaru dla listy przycisków
+        /// Ustawienie pozycji i rozmiaru dla listy przycisków 
         /// </summary>
         /// <param name="controls">Lista kontrolek do ustawienia</param>
         protected void AdjustButtonPositions(List<Control> controls)
@@ -135,10 +140,10 @@ namespace SwipeArena
         }
 
         /// <summary>
-        /// Automatyczne rozmieszczanie i skalowanie kontrolek w panelu ustawień
+        /// Automatyczne rozmieszczanie i skalowanie kontrolek w panelu ustawień przy rozdzielczości od 1280x720
         /// </summary>
         /// <param name="controls">Lista kontrolek do rozmieszczenia</param>
-        protected void AdjustControlLayoutForSettings(List<Control> controls)
+        protected void AdjustControlLayoutForSettingsMedium(List<Control> controls)
         {
             if (controls == null || controls.Count == 0)
                 return;
@@ -161,6 +166,23 @@ namespace SwipeArena
                     height = 30;
                     ctrl.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
                 }
+                else if (ctrl is TrackBar trackBar)
+                {
+                    width = (int)(ClientSize.Width * 0.5);
+
+                    // Tworzymy Label dla TrackBara
+                    Label trackBarLabel = new Label();
+                    trackBarLabel.Text = $"{trackBar.Name}: {trackBar.Value}";
+                    trackBarLabel.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1);
+                    trackBarLabel.AutoSize = true;
+                    trackBarLabel.Location = new Point((ClientSize.Width - width) / 2, currentY);
+
+                    // Dodajemy Label do formularza (lub panelu jeśli inny kontener)
+                    this.Controls.Add(trackBarLabel);
+
+                    // Przesuwamy TrackBar niżej
+                    currentY += trackBarLabel.Height + 5;
+                }
                 else if (ctrl is ComboBox || ctrl is TrackBar)
                 {
                     width = (int)(ClientSize.Width * 0.5);
@@ -168,6 +190,88 @@ namespace SwipeArena
                 else if (ctrl is Button)
                 {
                     width = Math.Max(150, ClientSize.Width / 3);
+                }
+
+                // Ustaw rozmiar i pozycję
+                ctrl.Size = new Size(width, height);
+                ctrl.Location = new Point((ClientSize.Width - width) / 2, currentY);
+
+                currentY += height + spacing;
+            }
+        }
+
+        /// <summary>
+        /// Automatyczne rozmieszczanie i skalowanie kontrolek w panelu ustawień od rozdzielczości 800x600
+        /// </summary>
+        /// <param name="controls">Lista kontrolek do rozmieszczenia</param>
+        protected void AdjustControlLayoutForSettingsSmall(List<Control> controls)
+        {
+            if (controls == null || controls.Count == 0)
+                return;
+
+            int panelPadding = 20;
+
+            // Rozmiar pojedynczego elementu w pionie (będzie zależny od typu)
+            int spacing = 20;
+            int currentY = panelPadding;
+
+            int buttonWidth = 200;
+            int buttonHeight = 50;
+            int buttonSpacing = 10;
+            int buttonsPerRow = 2;
+            int buttonRowXStart = (ClientSize.Width - (buttonWidth * buttonsPerRow + buttonSpacing * (buttonsPerRow - 1))) / 2;
+
+            int buttonIndex = 0; 
+
+            foreach (Control ctrl in controls)
+            {
+                int width = ClientSize.Width / 2;
+                int height = 40;
+
+                // Specjalne rozmiary dla różnych typów
+                if (ctrl is Label)
+                {
+                    width = (int)(ClientSize.Width * 0.6);
+                    height = 30;
+                    ctrl.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
+                }
+                else if (ctrl is ComboBox || ctrl is TrackBar)
+                {
+                    width = (int)(ClientSize.Width * 0.5);
+                }
+                else if (ctrl is TrackBar trackBar)
+                {
+                    width = (int)(ClientSize.Width * 0.5);
+
+                    // Tworzymy Label dla TrackBara
+                    Label trackBarLabel = new Label();
+                    trackBarLabel.Text = $"{trackBar.Name}: {trackBar.Value}";
+                    trackBarLabel.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1);
+                    trackBarLabel.AutoSize = true;
+                    trackBarLabel.Location = new Point((ClientSize.Width - width) / 2, currentY);
+
+                    // Dodajemy Label do formularza (lub panelu jeśli inny kontener)
+                    this.Controls.Add(trackBarLabel);
+
+                    // Przesuwamy TrackBar niżej
+                    currentY += trackBarLabel.Height + 5;
+                }
+
+                else if (ctrl is Button)
+                {
+                    // Ustaw rozmiar przycisków
+                    width = buttonWidth;
+                    height = buttonHeight;
+
+                    // Oblicz pozycję przycisku w rzędzie
+                    int rowX = buttonRowXStart + (buttonIndex % buttonsPerRow) * (buttonWidth + buttonSpacing);
+                    int rowY = currentY + (buttonIndex / buttonsPerRow) * (buttonHeight + spacing);
+
+                    ctrl.Size = new Size(width, height);
+                    ctrl.Location = new Point(rowX, rowY);
+
+                    buttonIndex++;
+                    continue; // Przejdź do następnej kontrolki
                 }
 
                 // Ustaw rozmiar i pozycję

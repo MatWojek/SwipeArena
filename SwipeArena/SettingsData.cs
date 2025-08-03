@@ -12,7 +12,7 @@ namespace SwipeArena
         static SettingsData? _instance;
 
         // Właściwości ustawień
-        public Point Resolution { get; set; } = new Point(800, 600);
+        public Point Resolution { get; set; } = new Point(1024, 768);
         public bool IsVolumeOn { get; set; } = true;
 
         double _volume = 0.5;
@@ -21,7 +21,7 @@ namespace SwipeArena
             get => IsVolumeOn ? _volume : 0;
             set => _volume = value;
         }
-        public bool IsAIon { get; set; } = true;
+        public bool IsAIEnabled { get; set; } = false; 
 
         static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "settings.json");
 

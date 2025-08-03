@@ -1,6 +1,6 @@
 ﻿namespace SwipeArena
 {
-    partial class Stats
+    partial class StatsForm
     {
         /// <summary>
         /// Required designer variable.

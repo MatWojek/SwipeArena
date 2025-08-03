@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace SwipeArena
 {
-    public partial class Loading : Form
+    public partial class LoadingForm : Form
     {
-        public Loading()
+        public LoadingForm()
         {
             InitializeComponent();
 

@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace SwipeArena
 {
-    public partial class GameOver : BaseForm
+    public partial class GameOverForm : BaseForm
     {
 
         Button exitLevelButton;
@@ -20,7 +20,7 @@ namespace SwipeArena
 
         Random random = new Random(); 
 
-        public GameOver()
+        public GameOverForm()
         {
             try
             {
@@ -105,8 +105,8 @@ namespace SwipeArena
         /// <param name="e"></param>
         void MenuButton_Click(object sender, EventArgs e)
         {
-            var menuForm = new Menu();
-            NavigateToForm(menuForm);
+            var menuForm = new MenuForm();
+            NavigateToForm(this, menuForm);
         }
 
         /// <summary>
@@ -116,40 +116,9 @@ namespace SwipeArena
         /// <param name="e"></param>
         void RestartButton_Click(object sender, EventArgs e)
         {
-            // Wyświetlenie okna ładowania
-            using (var loadingForm = new Loading())
-            {
-                loadingForm.Show();
-                loadingForm.Refresh();
-
-                // Symulacja czasu ładowania 
-                Thread.Sleep(2000);
-            }
-
-            var button = sender as Button;
-            int levelNumber = (int)(button?.Tag ?? 1);
-
-            int rows;
-            int cols;
-
-            // Określenie wielkości planszy na podstawie poziomu
-            if (levelNumber >= 6)
-            {
-                rows = random.Next(4, 8);
-                cols = random.Next(4, 8);
-            }
-            else
-            {
-                rows = random.Next(3, 3 + levelNumber);
-                cols = random.Next(3, 3 + levelNumber);
-            }
-
             // Przejście do Levelu
-            var selectedLevel = new Level(levelNumber, rows, cols);
-            selectedLevel.Show();
-
-            // Zamknięcie bieżącego formularza
-            Hide();
+            var selectedLevel = new LevelForm(LevelForm.currentLevel);
+            NavigateToForm(this, selectedLevel);
         }
 
         /// <summary>
@@ -159,8 +128,8 @@ namespace SwipeArena
         /// <param name="e"></param>
         void SettingsButton_Click(object? sender, EventArgs e)
         {
-            var settingsForm = new Settings();
-            NavigateToForm(settingsForm);
+            var settingsForm = new SettingsForm();
+            NavigateToForm(this, settingsForm);
         }
     }
 }

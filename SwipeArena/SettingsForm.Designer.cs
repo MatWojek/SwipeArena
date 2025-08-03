@@ -1,6 +1,6 @@
 ﻿namespace SwipeArena
 {
-    partial class Loading
+    partial class SettingsForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,14 +30,13 @@
         {
             SuspendLayout();
             // 
-            // Loading
+            // Settings
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "Loading";
-            Text = "Loading";
-            Load += Loading_Load;
+            Name = "Settings";
+            Text = "Settings";
             ResumeLayout(false);
         }
 

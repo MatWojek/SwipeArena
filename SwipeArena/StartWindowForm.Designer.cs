@@ -1,6 +1,6 @@
 ﻿namespace SwipeArena
 {
-    partial class GameOver
+    partial class StartWindowForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,13 +30,14 @@
         {
             SuspendLayout();
             // 
-            // GameOver
+            // StartWindow
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "GameOver";
-            Text = "GameOver";
+            Name = "StartWindow";
+            Text = "StartWindow";
+            Load += StartWindow_Load;
             ResumeLayout(false);
         }
 

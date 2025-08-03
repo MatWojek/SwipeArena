@@ -3,14 +3,14 @@ using System.Threading;
 
 namespace SwipeArena
 {
-    public partial class Menu : BaseForm
+    public partial class MenuForm : BaseForm
     { 
 
         Button startButton;
         Button settingsButton;
         Button exitButton;
 
-        public Menu()
+        public MenuForm()
         {
             try
             {
@@ -86,12 +86,9 @@ namespace SwipeArena
         /// <param name="e"></param>
         void StartButton_Click(object? sender, EventArgs e)
         {
-            // Zapisanie bie¿¹cego formularza do historii 
-            formHistory.Push(this);
-
             // Przejœcie do formularza SelectedLevel
-            var selectedLevelForm = new SelectLevel();
-            NavigateToForm(selectedLevelForm);  
+            var selectedLevelForm = new SelectLevelForm();
+            NavigateToForm(this, selectedLevelForm);  
         }
 
         /// <summary>
@@ -101,12 +98,9 @@ namespace SwipeArena
         /// <param name="e"></param>
         void SettingsButton_Click(object? sender, EventArgs e)
         {
-            // Zapisanie bie¿¹cego formularza do historii 
-            formHistory.Push(this);
-
             // Przejœcie do formularza Ustawienia
-            var settingsForm = new Settings();
-            NavigateToForm(settingsForm);
+            var settingsForm = new SettingsForm();
+            NavigateToForm(this, settingsForm);
            
         }
 

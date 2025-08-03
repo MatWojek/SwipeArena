@@ -1,6 +1,6 @@
 ﻿namespace SwipeArena
 {
-    partial class SelectLevel
+    partial class SelectLevelForm
     {
         /// <summary>
         /// Required designer variable.

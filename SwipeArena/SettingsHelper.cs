@@ -11,9 +11,12 @@ namespace SwipeArena
     /// </summary>
     public static class SettingsHelper
     {
+
+        static SettingsData settings = SettingsData.Instance;
+
         public static void ApplySettings(Form form, string text)
         {
-            form.Size = new Size(SettingsData.Instance.Resolution.X, SettingsData.Instance.Resolution.Y);
+            form.Size = new Size(settings.Resolution.X, settings.Resolution.Y);
             form.Text = text;
         }
     }

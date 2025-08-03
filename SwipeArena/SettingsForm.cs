@@ -5,9 +5,11 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 // TODO: 
 // Przed wyjściem wyskoczy MessageBox z pytaniem czy zapisać zmiany 
@@ -20,23 +22,25 @@ using System.Windows.Forms;
 
 namespace SwipeArena
 {
-    public partial class Settings : BaseForm
+    public partial class SettingsForm : BaseForm
     {
-        Button volumeButton, resetButton, saveButton, helpButton, exitButton, returnToMenuButton, statsButton, closeSettingsButton;
+        Button resetButton, saveButton, helpButton, exitButton, returnToMenuButton, statsButton;
 
         TrackBar volumeMusic;
 
         Label titleLabel, volumeLabel, aiLabel;
 
-        ComboBox changeResolution, aiComboBox;
+        ComboBox changeResolution;
+
+        System.Windows.Forms.CheckBox aiCheckBox; 
 
         Panel panelSettings;
 
         Image? volumeOnIcon, volumeOffIcon;
-           
-        SettingsData settings = new SettingsData();
 
-        public Settings()
+        SettingsData settings = SettingsData.Instance;
+
+        public SettingsForm()
         {
 
             try
@@ -44,7 +48,7 @@ namespace SwipeArena
                 InitializeComponent();
 
                 // Ustawienia Formularza 
-                LoadBackgroundImage("images/background/settings.png");
+                LoadBackgroundImage("images/background/settingsImage.png");
                 SettingsHelper.ApplySettings(this, "Ustawienia");
 
                 // Wczytanie ikon głośnika
@@ -61,7 +65,7 @@ namespace SwipeArena
                 // Tworzenie panelu ustawień 
                 panelSettings = UIHelper.CreatePanel(
                     "PanelSettings",
-                    new Size(ClientSize.Width - 40, ClientSize.Height - 40),
+                    new Size(ClientSize.Width - 100, ClientSize.Height - 50),
                     new Point(20, 20),
                     Color.FromArgb(240, 240, 240)
                 ); 
@@ -69,7 +73,7 @@ namespace SwipeArena
 
                 AddButtons();
 
-                Resize += (s, e) => ArrangeSettingsLayout();
+                //Resize += (s, e) => ArrangeSettingsLayout();
 
             }
             catch (Exception ex)
@@ -97,20 +101,6 @@ namespace SwipeArena
                 fontStyle: FontStyle.Bold
                 );
             panelSettings.Controls.Add(titleLabel);
-
-            closeSettingsButton = UIHelper.CreateButton(
-                title: "CloseSettingsButton",
-                text: "",
-                backColor: Color.FromArgb(255, 102, 102),
-                foreColor: Color.White,
-                size: new Size(0, 10),
-                location: new Point(ClientSize.Width / 3 + 300, 20),
-                font: BasicSettings.FontFamily,
-                fontSize: BasicSettings.FontSize,
-                fontStyle: FontStyle.Bold,
-                backgroundImage: Image.FromFile("images/icons/light_close.png")
-                );
-            panelSettings.Controls.Add(closeSettingsButton);
 
             // Dodanie napisu "Zmiana głośności"
             volumeLabel = UIHelper.CreateLabel(
@@ -141,61 +131,19 @@ namespace SwipeArena
                 settings.Volume = volumeMusic.Value / 100.0;
                 volumeLabel.Text = $"Zmiana głośności [{Math.Round(settings.Volume * 100)}%]";
 
-                // Zmiana ikony w zależności od poziomu głośności
-                if (settings.Volume == 0)
-                {
-                    volumeButton.BackgroundImage = volumeOffIcon;
-                }
-                else if (settings.Volume <= 0.6)
-                {
-                    volumeButton.BackgroundImage = Image.FromFile("images/icons/dark_volume_mute.png");
-                }
-                else
-                {
-                    volumeButton.BackgroundImage = Image.FromFile("images/icons/dark_volume_up.png");
-                }
             };
+
             panelSettings.Controls.Add(volumeMusic);
 
-            // Przycisk Ustawień Muzyki
-            volumeButton = UIHelper.CreateButton(
-                title: "VolumeButton",
-                text: "",
-                backColor: Color.Transparent,
-                foreColor: Color.Black,
-                size: new Size(40, 40),
-                location: new Point(ClientSize.Width / 2 + 150, ClientSize.Height / 3), 
-                backgroundImage: settings.IsVolumeOn ? volumeOnIcon : volumeOffIcon,
-                imageLayout: ImageLayout.Stretch
-                );
-            volumeButton.Click += (s, e) =>
-            {
-                settings.IsVolumeOn = !settings.IsVolumeOn;
-
-                if (!settings.IsVolumeOn)
-                {
-                    settings.Volume = 0;
-                    volumeMusic.Value = 0;
-                    volumeButton.BackgroundImage = volumeOffIcon;
-                }
-                else
-                {
-                    settings.Volume = 0.5; // Domyślna wartość po włączeniu
-                    volumeMusic.Value = (int)(settings.Volume * 100);
-                    volumeButton.BackgroundImage = Image.FromFile("images/icons/dark_volume_mute.png");
-                }
-            };
-            panelSettings.Controls.Add(volumeButton);
-
             // Lista rozwijana zmiany rozdzielczości 
-
             var resolutions = new List<Point>
             {
-                new Point(800, 600),
                 new Point(1024, 768),
+                new Point(1174,664),
                 new Point(1280, 720),
+                new Point(1336, 778), 
+                new Point(1600, 900),
                 new Point(1920, 1080)
-
             };
 
             changeResolution = new ComboBox
@@ -238,17 +186,21 @@ namespace SwipeArena
             ); 
             panelSettings.Controls.Add(aiLabel);
 
-            aiComboBox = new ComboBox
+            aiCheckBox = new System.Windows.Forms.CheckBox
             {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = Color.White,
+                Text = "Włącz funkcję AI", // Tekst obok CheckBoxa
+                BackColor = Color.Transparent,
                 ForeColor = Color.Black,
                 Size = new Size(ClientSize.Width / 4, 40),
-                Location = new Point(ClientSize.Width / 2, ClientSize.Height / 2 + 70)
+                Location = new Point(ClientSize.Width / 2, ClientSize.Height / 2 + 70),
+                Checked = settings.IsAIEnabled // Ustawienie domyślnego stanu
             };
-            aiComboBox.Items.AddRange(new string[] { "Wyłączona", "Włączona" });
-            aiComboBox.SelectedIndex = 0; // domyślnie wyłączona
-            panelSettings.Controls.Add(aiComboBox);
+            aiCheckBox.CheckedChanged += (s, e) =>
+            {
+                settings.IsAIEnabled = aiCheckBox.Checked; // Aktualizacja ustawienia na podstawie stanu CheckBoxa
+            };
+            panelSettings.Controls.Add(aiCheckBox);
+
 
             // Przycisk Statystyki
             statsButton = UIHelper.CreateButton(
@@ -262,7 +214,7 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            statsButton.Click += (s, e) => MessageBox.Show("Statystyki gracza – TODO");
+            statsButton.Click += StatsButton_Click;
             panelSettings.Controls.Add(statsButton);
 
             // Przycisk Wyjdź do menu
@@ -277,7 +229,7 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            returnToMenuButton.Click += (s, e) => { /* TODO: przejście do menu */ };
+            returnToMenuButton.Click += ReturnToMenuButton_Click;
             panelSettings.Controls.Add(returnToMenuButton);
 
             // Przycisk Zresetuj
@@ -341,8 +293,67 @@ namespace SwipeArena
             panelSettings.Controls.Add(exitButton);
 
             var allControls = panelSettings.Controls.Cast<Control>().ToList();
-            AdjustControlLayoutForSettings(allControls);
 
+            if (ClientSize.Width < 1336)
+            {
+                AdjustControlLayoutForSettingsSmall(allControls);
+            }
+            else
+            {
+                AdjustControlLayoutForSettingsMedium(allControls);
+            }
+
+            Resize += (s, e) =>
+            {
+                if (ClientSize.Width < 1336)
+                {
+                    AdjustControlLayoutForSettingsSmall(allControls);
+                }
+                else
+                {
+                    AdjustControlLayoutForSettingsMedium(allControls);
+                }
+                ArrangeSettingsLayout();
+            };
+        }
+
+        /// <summary>
+        /// Przejście do formularza Menu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ReturnToMenuButton_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Czy chcesz zapisać zmiany przed wyjściem?",
+                "Zapisywanie ustawień",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                settings.SaveToFile();
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                // Jeśli użytkownik wybierze "Cancel", zakończ metodę
+                return;
+            }
+
+            var menuForm = new MenuForm();
+            NavigateToForm(this, menuForm);
+        }
+
+        /// <summary>
+        /// Przejście do formularza statystyk
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void StatsButton_Click(object sender, EventArgs e)
+        {
+            var stats = new StatsForm();
+            NavigateToForm(this, stats);
         }
 
         /// <summary>
@@ -362,7 +373,35 @@ namespace SwipeArena
 
             if (result == DialogResult.Yes)
             {
-                SettingsData.Instance.SaveToFile();
+                settings.SaveToFile();
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                // Jeśli użytkownik wybierze "Cancel", zakończ metodę
+                return;
+            }
+
+            Close();
+        }
+
+        /// <summary>
+        /// Wyjście z ustawień
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ExitSettingsButton_Click(object? sender, EventArgs e)
+        {
+
+            var result = MessageBox.Show(
+                "Czy chcesz zapisać zmiany przed wyjściem?",
+                "Zapisywanie ustawień",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.Yes)
+            {
+                settings.SaveToFile();
             }
             else if (result == DialogResult.Cancel)
             {
@@ -373,7 +412,6 @@ namespace SwipeArena
             NavigateBack();
         }
 
-
         /// <summary>
         /// Zapisywanie postępu
         /// </summary>
@@ -383,8 +421,11 @@ namespace SwipeArena
         {
             try
             {
+
                 var saveLoad = new SaveLoad();
                 saveLoad.Save();
+                settings.SaveToFile();
+
                 MessageBox.Show("Postęp został zapisany.", "Zapis postępu", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -392,6 +433,17 @@ namespace SwipeArena
                 MessageBox.Show($"Wystąpił błąd podczas zapisywania postępu: {ex.Message}", "Błąd zapisu", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        /// <summary>
+        /// Dynamiczne rozmieszczanie kontrolek po zmianie rozdzielczości
+        /// </summary>
+        void ArrangeSettingsLayout()
+        {
+            // Panel główny
+            panelSettings.Size = new Size(ClientSize.Width - 40, ClientSize.Height - 40);
+            panelSettings.Location = new Point(20, 20);
+        }
+
 
         /// <summary>
         /// Resetowanie postępu oraz ustawień do domyślnych
@@ -408,7 +460,6 @@ namespace SwipeArena
 
                 // Aktualizacja UI
                 Size = new Size(settings.Resolution.X, settings.Resolution.Y);
-                volumeButton.BackgroundImage = volumeOnIcon;
 
                 MessageBox.Show("Ustawienia zostały zresetowane do domyślnych.", "Reset ustawień", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -419,37 +470,14 @@ namespace SwipeArena
         }
 
         /// <summary>
-        /// Dynamiczne rozmieszczanie kontrolek po zmianie rozdzielczości
-        /// </summary>
-        void ArrangeSettingsLayout()
-        {
-            foreach (Control ctrl in panelSettings.Controls)
-            {
-                if (ctrl is Button || ctrl is ComboBox || ctrl is TrackBar)
-                {
-                    ctrl.Width = ClientSize.Width / 3;
-                    ctrl.Height = 40;
-                    ctrl.Left = (ClientSize.Width - ctrl.Width) / 2;
-                }
-            }
-
-            // Panel główny
-            panelSettings.Size = new Size(ClientSize.Width - 40, ClientSize.Height - 40);
-            panelSettings.Location = new Point(20, 20);
-        }
-
-        /// <summary>
         /// Otworzenie okna Pomocy
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void HelpButton_Click(object? sender, EventArgs e)
         {
-            // Zapisanie bieżącego formularza do historii 
-            formHistory.Push(this);
-
-            var helpButton = new Help();
-            NavigateToForm(helpButton);
+            var helpButton = new HelpForm();
+            NavigateToForm(this, helpButton);
         }
     }     
 }

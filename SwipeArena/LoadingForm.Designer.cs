@@ -1,6 +1,6 @@
 ﻿namespace SwipeArena
 {
-    partial class Level
+    partial class LoadingForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,13 +30,14 @@
         {
             SuspendLayout();
             // 
-            // Level
+            // Loading
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "Level";
-            Text = "SelectedLevel";
+            Name = "Loading";
+            Text = "Loading";
+            Load += Loading_Load;
             ResumeLayout(false);
         }
 

@@ -1,10 +1,10 @@
 ﻿namespace SwipeArena
 {
-    public partial class StartWindow : Form
+    public partial class StartWindowForm : Form
     {
         System.Windows.Forms.Timer transitionTimer;
 
-        public StartWindow()
+        public StartWindowForm()
         {
             try
             {
@@ -65,7 +65,7 @@
         {
             transitionTimer.Stop();
 
-            var mainMenu = new Menu();
+            var mainMenu = new MenuForm();
             mainMenu.Show();
 
             Hide();

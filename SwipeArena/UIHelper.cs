@@ -43,14 +43,14 @@ namespace SwipeArena
                 {
                     Text = text,
                     FlatStyle = FlatStyle.Flat,
-                    BackColor = backColor, // Color.FromArgb(67, 203, 107)
-                    ForeColor = foreColor, // Color.White
+                    BackColor = backColor, 
+                    ForeColor = foreColor, 
                     Size = size ?? new Size(10, 10),
                     Location = location ?? new Point(0, 0),
                     FlatAppearance = { BorderSize = borderSize },
                     Font = new System.Drawing.Font(font, fontSize, fontStyle),
                     BackgroundImage = backgroundImage,
-                    BackgroundImageLayout = imageLayout,
+                    BackgroundImageLayout = imageLayout
                 };
             }
             catch (Exception ex)
@@ -142,6 +142,11 @@ namespace SwipeArena
         //public static TrackBar CreateTrackBar()
         //{
         //    ComboBox box = new ComboBox(); 
+        //}
+
+        //public static PictureBox CreatePictureBox()
+        //{
+        //    PictureBox pic = new PictureBox();
         //}
     }
 }

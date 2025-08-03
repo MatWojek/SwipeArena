@@ -1,4 +1,6 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System;
+using System.Diagnostics;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
@@ -17,8 +19,9 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace SwipeArena
 {
-    public partial class Level : BaseForm
+    public partial class LevelForm : BaseForm
     {
+        Stopwatch gameStopwatch = new Stopwatch();
 
         AIHelper ai = new AIHelper();
         List<IGameElement> elementTypes = new();
@@ -35,13 +38,15 @@ namespace SwipeArena
         bool isDragging = false;
         Point mouseDownPos;
 
-        public Level(int level, int rows, int cols)
+        public static int currentLevel;
+
+        public LevelForm(int level)
         {
             InitializeComponent();
             LoadBackgroundImage("images/background/background.png");
 
-            this.rows = rows;
-            this.cols = cols;
+            currentLevel = level;
+            RandomBoardSize(level);
             xSize = rows < 4 ? 128 : 64;
             ySize = xSize;
 
@@ -55,6 +60,27 @@ namespace SwipeArena
 
             CenterElements();
             Resize += (s, e) => CenterElements();
+        }
+
+        /// <summary>
+        /// Określenie wielkości planszy na podstawie poziomu
+        /// </summary>
+        /// <param name="levelNumber"></param>
+        void RandomBoardSize(int levelNumber)
+        {
+            Random random = new Random();
+
+            if (levelNumber >= 6)
+            {
+                rows = random.Next(4, 8);
+                cols = random.Next(4, 8);
+            }
+            else
+            {
+                rows = random.Next(3, 3 + levelNumber);
+                cols = random.Next(3, 3 + levelNumber);
+            }
+
         }
 
         void Pic_MouseUp(object sender, MouseEventArgs e)
@@ -231,7 +257,7 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            settingsButton.Click += (s, e) => { new Settings().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
+            settingsButton.Click += (s, e) => { new SettingsForm().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
             Controls.AddRange(new Control[] { settingsButton, hintButton, movesLabel, pointsLabel });
         }
 
@@ -268,8 +294,6 @@ namespace SwipeArena
             };
             timer.Start();
         }
-
-
 
         /// <summary>
         /// Generowanie losowo elementów gry
@@ -553,7 +577,11 @@ namespace SwipeArena
                     pointsCollected += matches.Count;
                     pointsLabel.Text = $"Punkty: {pointsCollected}/{pointsToWin}";
 
-                    RemoveMatches(matches);
+                    if (CheckGameOver())
+                    {
+                        RemoveMatches(matches);
+                    }
+                    
                 }
 
                 if (!HasValidMove())
@@ -575,31 +603,94 @@ namespace SwipeArena
                 ShuffleBoard();
             }
 
-            CheckGameOver();
+
+            SaveData();
+
         }
 
+        /// <summary>
+        /// Zapis wyników punktowych
+        /// </summary>
+        void SaveData()
+        {
+            SaveLoad save = new SaveLoad();
+
+            save.Load();
+
+            save.BestWinStreak = Math.Max(save.BestWinStreak, save.CurrentWinStreak);
+            save.MaxPoints = Math.Max(save.MaxPoints, pointsCollected);
+            save.LastLevelPlayed = currentLevel;
+            save.TotalPoints += pointsCollected;
+
+            save.Save();
+        }
+
+        /// <summary>
+        /// Zapis po wygranej lub przegranej
+        /// </summary>
+        void SaveAfterWin()
+        {
+            SaveLoad save = new SaveLoad();
+
+            save.Load();
+
+            if (movesLeft >= 0 && pointsCollected >= pointsToWin)
+            {
+                save.CurrentWinStreak++;
+
+                if (currentLevel > save.LevelCompleted)
+                {
+                    save.LevelCompleted = currentLevel;
+                }
+
+            }
+            else if (movesLeft <= 0 && pointsCollected <= pointsToWin)
+            {
+                save.CurrentWinStreak = 0;
+            }
+
+            save.BestWinStreak = Math.Max(save.BestWinStreak, save.CurrentWinStreak);
+
+            if (gameStopwatch != null)
+            {
+                save.TimeGame += gameStopwatch.Elapsed.TotalSeconds;
+                gameStopwatch.Reset();
+            }
+
+            save.Save();
+        }
 
 
         /// <summary>
         /// Sprawdzenie zwycięstwa
         /// </summary>
-        void CheckGameOver()
+        bool CheckGameOver()
         {
             // Zwycięstwo w poziomie
             if (movesLeft >= 0 && pointsCollected >= pointsToWin)
             {
+                SaveAfterWin();
+
                 // Przejście do formularza LevelComplete
                 var levelComplete = new LevelComplete();
-                NavigateToForm(levelComplete);
+                NavigateToForm(this, levelComplete);
+
+                return false;
             }
 
             // Przegranie w poziomie 
             else if (movesLeft <= 0 && pointsCollected <= pointsToWin)
             {
+                SaveAfterWin();
+
                 // Przejście do formularza GameOver 
-                var gameOver = new GameOver();
-                NavigateToForm(gameOver);
+                var gameOver = new GameOverForm();
+                NavigateToForm(this, gameOver);
+
+                return false;
             }
+
+            return true; 
         }
 
 
