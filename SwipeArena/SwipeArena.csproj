@@ -126,7 +126,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="GameLogic\" />
+    <Folder Include="Helpers\" />
     <Folder Include="music\" />
+    <Folder Include="UI\" />
   </ItemGroup>
 
   <ItemGroup>

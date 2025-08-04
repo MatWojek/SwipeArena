@@ -21,7 +21,7 @@ namespace SwipeArena
             get => IsVolumeOn ? _volume : 0;
             set => _volume = value;
         }
-        public bool IsAIEnabled { get; set; } = BasicSettings.DefualtIsAIEnabled; 
+        public bool IsAIEnabled { get; set; } = BasicSettings.DefualtIsAIEnabled;
 
         static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "settings.json");
 

@@ -19,9 +19,9 @@ namespace SwipeArena
         static readonly string SaveFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "saveData.json");
 
         public int CurrentWinStreak { get; set; } = 0;
-        public int BestWinStreak { get; set; } = 0; 
+        public int BestWinStreak { get; set; } = 0;
         public int LastLevelPlayed { get; set; } = 0;
-        public int LevelCompleted { get; set; } = 0; 
+        public int LevelCompleted { get; set; } = 0;
         public int MaxPoints { get; set; } = 0;
         public int TotalPoints { get; set; } = 0;
         public double TimeGame { get; set; } = 0.0;
@@ -38,7 +38,7 @@ namespace SwipeArena
                 LevelCompleted,
                 LastLevelPlayed,
                 MaxPoints,
-                TotalPoints, 
+                TotalPoints,
                 TimeGame
             };
 
@@ -59,7 +59,7 @@ namespace SwipeArena
                 CurrentWinStreak = saveData.CurrentWinStreak;
                 BestWinStreak = saveData.BestWinStreak;
                 LastLevelPlayed = saveData.LastLevelPlayed;
-                LevelCompleted = saveData.LevelCompleted; 
+                LevelCompleted = saveData.LevelCompleted;
                 MaxPoints = saveData.MaxPoints;
                 TotalPoints = saveData.TotalPoints;
                 TimeGame = saveData.TimeGame;

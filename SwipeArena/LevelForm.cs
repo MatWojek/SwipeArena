@@ -48,7 +48,7 @@ namespace SwipeArena
 
             currentLevel = level;
             RandomBoardSize(level);
-            xSize = rows < 8 ? 128 : 96;
+            xSize = rows < 4 ? 128 : 72;
             ySize = xSize;
 
             SettingsHelper.ApplySettings(this, $"Level {level}");
@@ -221,16 +221,16 @@ namespace SwipeArena
                 foreColor: Color.White,
                 backColor: Color.FromArgb(66, 197, 230),
                 fontStyle: FontStyle.Bold
-                ); 
+                );
 
             pointsLabel = UIHelper.CreateLabel(
                 title: "PointsLabel",
-                text: $"Punkty: {pointsCollected}/{pointsToWin}", 
+                text: $"Punkty: {pointsCollected}/{pointsToWin}",
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
-                foreColor: Color.White, 
+                foreColor: Color.White,
                 backColor: Color.FromArgb(66, 197, 230),
-                fontStyle: FontStyle.Bold  
+                fontStyle: FontStyle.Bold
                 );
 
             hintButton = UIHelper.CreateButton(
@@ -443,6 +443,7 @@ namespace SwipeArena
             ResetClick();
         }
 
+
         /// <summary>
         /// Sprawdzenie czy przesunięcie elementu o jedno pole skutkuje matchem
         /// </summary>
@@ -526,8 +527,12 @@ namespace SwipeArena
         /// <param name="b"></param>
         void SwapImages(PictureBox a, PictureBox b)
         {
-            (a.Image, b.Image) = (b.Image, a.Image);
+            // Zamiana obrazów między dwoma PictureBox
+            var tempImage = a.Image;
+            a.Image = b.Image;
+            b.Image = tempImage;
         }
+
 
         /// <summary>
         /// Wyśrodkowuje elementy na planszy
@@ -591,7 +596,7 @@ namespace SwipeArena
                     {
                         RemoveMatches(matches);
                     }
-                    
+
                 }
 
                 if (!HasValidMove())
@@ -700,9 +705,8 @@ namespace SwipeArena
                 return false;
             }
 
-            return true; 
+            return true;
         }
-
 
         /// <summary>
         /// Sprawdzanie czy istnieją połączenia
@@ -749,10 +753,10 @@ namespace SwipeArena
             }
 
             return matches.ToList();
-        }
+        } 
 
         /// <summary>
-        /// Animacja po połączeniu 3 elementów 
+        /// Animacja po połączeniu 3 elementów (usuwanie elementów) 
         /// </summary>
         /// <param name="matches"></param>
         /// <param name="onAnimationComplete"></param>
@@ -762,7 +766,7 @@ namespace SwipeArena
             System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             int blinkCount = 0;
 
-            timer.Interval = 100;
+            timer.Interval = 150;
             timer.Tick += (s, e) =>
             {
                 foreach (Point match in matches)

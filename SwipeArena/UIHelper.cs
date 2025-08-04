@@ -5,7 +5,7 @@ namespace SwipeArena
 {
     public static class UIHelper
     {
-        
+
         /// <summary>
         /// Tworzenie Button
         /// </summary>
@@ -30,7 +30,7 @@ namespace SwipeArena
             Point? location = null,
             string font = "Arial",
             int fontSize = 15,
-            FontStyle fontStyle = FontStyle.Bold, 
+            FontStyle fontStyle = FontStyle.Bold,
             FlatStyle flatStyle = FlatStyle.Flat,
             int borderSize = 0,
             ImageLayout imageLayout = ImageLayout.None,
@@ -43,8 +43,8 @@ namespace SwipeArena
                 {
                     Text = text,
                     FlatStyle = FlatStyle.Flat,
-                    BackColor = backColor, 
-                    ForeColor = foreColor, 
+                    BackColor = backColor,
+                    ForeColor = foreColor,
                     Size = size ?? new Size(10, 10),
                     Location = location ?? new Point(0, 0),
                     FlatAppearance = { BorderSize = borderSize },
@@ -85,13 +85,13 @@ namespace SwipeArena
         /// <returns></returns>
         public static Label CreateLabel(
             string title,
-            string text, 
+            string text,
             string font,
             int fontSize,
             Color foreColor,
             Color backColor,
             Point? location = null,
-            FontStyle fontStyle = FontStyle.Regular, 
+            FontStyle fontStyle = FontStyle.Regular,
             bool autostart = true
 
         )
@@ -101,7 +101,7 @@ namespace SwipeArena
                 Text = text,
                 Font = new System.Drawing.Font(font, fontSize),
                 ForeColor = foreColor,
-                BackColor = backColor, 
+                BackColor = backColor,
                 Location = location ?? new Point(10, 10),
                 AutoSize = autostart
             };
@@ -117,10 +117,10 @@ namespace SwipeArena
         /// <param name="borderStyle"></param>
         /// <returns></returns>
         public static Panel CreatePanel(
-            string title, 
-            Size size, 
-            Point Location, 
-            Color backColor, 
+            string title,
+            Size size,
+            Point Location,
+            Color backColor,
             BorderStyle borderStyle = BorderStyle.None
         )
         {

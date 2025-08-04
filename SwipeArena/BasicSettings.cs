@@ -13,7 +13,7 @@ namespace SwipeArena
     public static class BasicSettings
     {
         public static string FontFamily { get; } = "Arial";
-        public static int FontSize { get; } = 15; 
+        public static int FontSize { get; } = 15;
         public static int DefaultX { get; } = 1024;
         public static int DefaultY { get; } = 768;
         public static double DefaultMusicVolume { get; } = 0.5;
