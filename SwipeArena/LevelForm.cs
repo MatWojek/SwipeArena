@@ -14,7 +14,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 // Przycisk cofania 
 // Przycisk powrotu do menu 
 // Progres jest zapisywany, i wyświetlany na ekranie, 
-// Progres to ile poziomów udało się zdobyć
+// Progres to ile poziomów udało się zdobyća
 // Przy przyciśnięciu lub zmianie, zmienia się kolor na czerwony, żeby w 100% informować że te elementy są zmieniane lub wybrane
 
 
@@ -48,7 +48,7 @@ namespace SwipeArena
 
             currentLevel = level;
             RandomBoardSize(level);
-            xSize = rows < 4 ? 128 : 72;
+            xSize = cols < 6 ? 128 : 72;
             ySize = xSize;
 
             SettingsHelper.ApplySettings(this, $"Level {level}");
@@ -158,6 +158,39 @@ namespace SwipeArena
         }
 
         /// <summary>
+        /// Zamiana elementów w siatce
+        /// </summary>
+        /// <param name="pos1"></param>
+        /// <param name="pos2"></param>
+        /// <param name="box1"></param>
+        /// <param name="box2"></param>
+        void HandleSwap(Point pos1, Point pos2, PictureBox box1, PictureBox box2)
+        {
+            if (!AreAdjacent(pos1, pos2)) return;
+
+            // Animacja zamiany
+            AnimationSwap(pos1, pos2, box1, box2, onComplete: () =>
+            {
+                // Zamiana elementów w gridzie
+                Swap(pos1, pos2);
+
+                if (FindMatches().Count > 0)
+                {
+                    // Jeśli ruch tworzy match, przetwarzaj dopasowania
+                    ProcessMatches(decrementMoves: true);
+                }
+                else
+                {
+                    // Jeśli ruch nie tworzy matcha, cofnij zamianę z animacją
+                    AnimationSwap(pos2, pos1, box1, box2, onComplete: () =>
+                    {
+                        Swap(pos1, pos2);
+                    });
+                }
+            });
+        }
+
+        /// <summary>
         /// Obsługa upuszczania elementów
         /// </summary>
         /// <param name="sender"></param>
@@ -167,46 +200,12 @@ namespace SwipeArena
             if (dragged == null || dragged.Tag is not Point draggedPos || sender is not PictureBox target || target.Tag is not Point targetPos)
                 return;
 
-            // Sprawdzenie, czy ruch jest sąsiadujący
-            int deltaX = Math.Abs(draggedPos.X - targetPos.X);
-            int deltaY = Math.Abs(draggedPos.Y - targetPos.Y);
-
-            if ((deltaX == 1 && deltaY == 0) || (deltaX == 0 && deltaY == 1))
-            {
-                // Zamiana elementów w gridzie
-                IGameElement temp = grid[draggedPos.Y, draggedPos.X];
-                grid[draggedPos.Y, draggedPos.X] = grid[targetPos.Y, targetPos.X];
-                grid[targetPos.Y, targetPos.X] = temp;
-
-                // Sprawdzenie, czy ruch tworzy match
-                if (FindMatches().Count > 0)
-                {
-                    // Jeśli ruch tworzy match, aktualizuj obrazki
-                    Image tempImg = dragged.Image;
-                    dragged.Image = target.Image;
-                    target.Image = tempImg;
-
-                    // Wywołanie logiki przetwarzania dopasowań
-                    ProcessMatches(decrementMoves: true);
-                }
-
-                else
-                {
-                    // Jeśli ruch nie tworzy matcha, przywróć oryginalny stan
-                    grid[targetPos.Y, targetPos.X] = grid[draggedPos.Y, draggedPos.X];
-                    grid[draggedPos.Y, draggedPos.X] = temp;
-
-                    // Przywrócenie obrazków
-                    dragged.Image = grid[draggedPos.Y, draggedPos.X].Icon;
-                    target.Image = grid[targetPos.Y, targetPos.X].Icon;
-                }
-            }
+            HandleSwap(draggedPos, targetPos, dragged, target);
 
             // Resetowanie stanu przeciągania
             dragged = null;
             isDragging = false;
         }
-
 
         /// <summary>
         /// Tworzenie interfejsu (liczniki, przycisku) 
@@ -429,17 +428,7 @@ namespace SwipeArena
                 return;
             }
 
-            if (AreAdjacent(pos1, pos2))
-            {
-                Swap(pos1, pos2);
-                if (FindMatches().Count > 0)
-                {
-                    SwapImages(firstClicked, clicked);
-                    ProcessMatches(decrementMoves: true);
-                }
-                else Swap(pos1, pos2);
-            }
-
+            HandleSwap(pos1, pos2, firstClicked, clicked);
             ResetClick();
         }
 
@@ -753,7 +742,57 @@ namespace SwipeArena
             }
 
             return matches.ToList();
-        } 
+        }
+
+        /// <summary>
+        /// Animacja przesunięcia elementów
+        /// </summary>
+        /// <param name="pos1"></param>
+        /// <param name="pos2"></param>
+        /// <param name="box1"></param>
+        /// <param name="box2"></param>
+        /// <param name="onComplete"></param>
+        void AnimationSwap(Point pos1, Point pos2, PictureBox box1, PictureBox box2, Action onComplete = null)
+        {
+            var originalLocation1 = box1.Location;
+            var originalLocation2 = box2.Location;
+
+            var animationTimer = new System.Windows.Forms.Timer { Interval = 10 };
+            int step = 0;
+            int totalSteps = 20;
+
+            animationTimer.Tick += (s, e) =>
+            {
+                step++;
+                box1.Location = new Point(
+                    originalLocation1.X + (originalLocation2.X - originalLocation1.X) * step / totalSteps,
+                    originalLocation1.Y + (originalLocation2.Y - originalLocation1.Y) * step / totalSteps
+                );
+                box2.Location = new Point(
+                    originalLocation2.X + (originalLocation1.X - originalLocation2.X) * step / totalSteps,
+                    originalLocation2.Y + (originalLocation1.Y - originalLocation2.Y) * step / totalSteps
+                );
+
+                if (step >= totalSteps)
+                {
+                    animationTimer.Stop();
+                    animationTimer.Dispose();
+
+                    // Przywrócenie oryginalnych lokalizacji
+                    box1.Location = originalLocation1;
+                    box2.Location = originalLocation2;
+
+                    // Zamiana obrazów w PictureBox
+                    SwapImages(box1, box2);
+
+                    // Wywołanie akcji po zakończeniu animacji
+                    onComplete?.Invoke();
+                }
+            };
+
+            animationTimer.Start();
+        }
+
 
         /// <summary>
         /// Animacja po połączeniu 3 elementów (usuwanie elementów) 
