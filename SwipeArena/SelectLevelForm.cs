@@ -1,4 +1,7 @@
 ﻿using System.Drawing.Drawing2D;
+using SwipeArena.Config;
+using SwipeArena.Helpers;
+using SwipeArena.UI;
 
 
 namespace SwipeArena
@@ -6,18 +9,17 @@ namespace SwipeArena
     public partial class SelectLevelForm : BaseForm
     {
 
-        Button settingsButton, levelButton; 
+        Button settingsButton, levelButton;
+
+        const int LEVELS = 15;
+        const int MARGIN = 100;
+        Random random = new Random();
+        List<Button> levelButtons = new List<Button>();
 
         public SelectLevelForm()
         {
 
             InitializeComponent();
-
-            // Włącz przewijanie w panelu
-            panel1.AutoScroll = true;
-
-            // Obsługa zdarzenia Scroll
-            panel1.Scroll += Panel1_Scroll;
 
             // Asynchroniczne wczytanie ilustracji jako tła
             Task.Factory.StartNew(() =>
@@ -27,7 +29,7 @@ namespace SwipeArena
             })
             .ContinueWith(t =>
             {
-                if (t.Exception == null) 
+                if (t.Exception == null)
                 {
                     panel1.BackgroundImage = t.Result;
                     panel1.BackgroundImageLayout = ImageLayout.Stretch;
@@ -52,7 +54,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            settingsButton.Click += (s, e) => { new SettingsForm().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
+            settingsButton.Click += (s, e) =>
+            {
+                var settingsForm = new SettingsForm();
+                NavigateToForm(this, settingsForm);
+            };
             panel1.Controls.Add(settingsButton);
 
             CreateLevelButtons();
@@ -62,21 +68,8 @@ namespace SwipeArena
 
             // Rejestracja obsługi zamknięcia okna
             FormUtils.RegisterFormClosingHandler(this);
-        }
 
-        void Panel1_Scroll(object sender, ScrollEventArgs e)
-        {
-            // Aktualizacja pozycji przycisku "Ustawienia" w zależności od przesunięcia scrolla
-            settingsButton.Location = new Point(
-                settingsButton.Location.X,
-                10 - panel1.AutoScrollPosition.Y
-            );
         }
-
-        const int levels = 15;
-        const int margin = 100;
-        Random random = new Random();
-        List<Button> levelButtons = new List<Button>();
 
         /// <summary>
         /// Ustawienia wyboru leveli
@@ -85,11 +78,10 @@ namespace SwipeArena
         /// <param name="e"></param>
         void CreateLevelButtons()
         {
-
             SaveLoad save = new SaveLoad();
             save.Load();
 
-            if (save.LevelCompleted < levels)
+            if (save.LevelCompleted < LEVELS)
             {
                 for (int i = 1; i <= save.LevelCompleted + 1; i++)
                 {
@@ -105,7 +97,7 @@ namespace SwipeArena
                         backColor: Color.FromArgb(169, 169, 169),
                         foreColor: Color.White,
                         size: new Size(buttonWidth, buttonHeight),
-                        location: new Point(randomX, margin * i),
+                        location: new Point(randomX, MARGIN * i),
                         flatStyle: FlatStyle.Flat,
                         fontStyle: FontStyle.Bold,
                         fontSize: 10
@@ -113,7 +105,7 @@ namespace SwipeArena
 
                     if (save.LevelCompleted + 1 == i)
                     {
-                        levelButton.BackColor = Color.Red;
+                        levelButton.BackColor = Color.FromArgb(66, 197, 230);
                     }
 
                     else
@@ -160,10 +152,10 @@ namespace SwipeArena
         /// <summary>
         /// Obsługa zmiany rozmiaru okna
         /// </summary>
-        private void SelectLevel_Resize(object sender, EventArgs e)
+        void SelectLevel_Resize(object sender, EventArgs e)
         {
             int buttonSize = Math.Min(panel1.Width / 10, 100);
-            int currentMargin = panel1.Height / (levels + 1) + margin;
+            int currentMargin = panel1.Height / (LEVELS + 2) + MARGIN;
 
             for (int i = 0; i < levelButtons.Count; i++)
             {

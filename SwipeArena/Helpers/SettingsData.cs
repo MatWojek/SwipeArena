@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
+using SwipeArena.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SwipeArena
+namespace SwipeArena.Helpers
 {
     public class SettingsData
     {
@@ -83,6 +84,67 @@ namespace SwipeArena
             catch (Exception ex)
             {
                 Console.WriteLine($"Błąd podczas zapisywania ustawień: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Wczytywanie ustawień z wybranego pliku .json
+        /// </summary>
+        public void LoadFromSelectedFile()
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "JSON Files (*.json)|*.json";
+                openFileDialog.Title = "Wybierz plik ustawień";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        var json = File.ReadAllText(openFileDialog.FileName);
+                        var loadedSettings = JsonConvert.DeserializeObject<SettingsData>(json);
+
+                        if (loadedSettings != null)
+                        {
+                            // Aktualizacja właściwości instancji
+                            Resolution = loadedSettings.Resolution;
+                            IsVolumeOn = loadedSettings.IsVolumeOn;
+                            Volume = loadedSettings.Volume;
+                            IsAIEnabled = loadedSettings.IsAIEnabled;
+
+                            // Zapisz nowe ustawienia do domyślnego pliku
+                            SaveToFile();
+
+                            MessageBox.Show("Ustawienia zostały pomyślnie załadowane i zapisane.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Nie udało się załadować ustawień z pliku.", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Wystąpił błąd podczas wczytywania pliku: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Reset Ustawień
+        /// </summary>
+        public void Reset()
+        {
+            Resolution = new Point(BasicSettings.DefaultX, BasicSettings.DefaultY);
+            IsVolumeOn = BasicSettings.DefaultIsVolumeOn;
+            Volume = BasicSettings.DefaultMusicVolume;
+            IsAIEnabled = BasicSettings.DefualtIsAIEnabled;
+
+            // Usunięcie pliku ustawień
+            if (File.Exists(SettingsFile))
+            {
+                File.Delete(SettingsFile);
             }
         }
     }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 // Obecną i najlepszą 
 // Oraz który level był robiony jako ostatni
 
-namespace SwipeArena
+namespace SwipeArena.Helpers
 {
     /// <summary>
     /// Zapisywanie i wczytywanie gry
@@ -18,13 +18,41 @@ namespace SwipeArena
     {
         static readonly string SaveFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "saveData.json");
 
+        /// <summary>
+        /// Liczba zwycięstw z rzędu w bieżącej sesji gry.
+        /// </summary>
         public int CurrentWinStreak { get; set; } = 0;
+
+        /// <summary>
+        /// Najlepsza seria zwycięstw osiągnięta w historii gry.
+        /// </summary>
         public int BestWinStreak { get; set; } = 0;
+
+        /// <summary>
+        /// Numer ostatniego poziomu, który został rozpoczęty.
+        /// </summary>
         public int LastLevelPlayed { get; set; } = 0;
+
+        /// <summary>
+        /// Liczba ukończonych poziomów.
+        /// </summary>
         public int LevelCompleted { get; set; } = 0;
+
+        /// <summary>
+        /// Najwyższa liczba punktów zdobyta w jednej sesji gry.
+        /// </summary>
         public int MaxPoints { get; set; } = 0;
+
+        /// <summary>
+        /// Całkowita liczba punktów zdobyta przez gracza w całej grze.
+        /// </summary>
         public int TotalPoints { get; set; } = 0;
+
+        /// <summary>
+        /// Łączny czas gry w sekundach.
+        /// </summary>
         public double TimeGame { get; set; } = 0.0;
+
 
         /// <summary>
         /// Zapisuje postępy do pliku JSON.
@@ -85,6 +113,43 @@ namespace SwipeArena
                 File.Delete(SaveFilePath);
             }
         }
-    }
 
+        /// <summary>
+        /// Wczytuje postępy z wybranego pliku JSON.
+        /// </summary>
+        public void LoadFromSelectedFile()
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "JSON Files (*.json)|*.json";
+                openFileDialog.Title = "Wybierz plik zapisu";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        var json = File.ReadAllText(openFileDialog.FileName);
+                        var saveData = JsonConvert.DeserializeObject<dynamic>(json);
+
+                        // Aktualizacja właściwości na podstawie wczytanych danych
+                        CurrentWinStreak = saveData.CurrentWinStreak;
+                        BestWinStreak = saveData.BestWinStreak;
+                        LastLevelPlayed = saveData.LastLevelPlayed;
+                        LevelCompleted = saveData.LevelCompleted;
+                        MaxPoints = saveData.MaxPoints;
+                        TotalPoints = saveData.TotalPoints;
+                        TimeGame = saveData.TimeGame;
+
+                        Save();
+
+                        MessageBox.Show("Postępy zostały pomyślnie wczytane.", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Wystąpił błąd podczas wczytywania pliku: {ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+    }
 }

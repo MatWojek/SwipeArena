@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SwipeArena.Config;
+using SwipeArena.Helpers;
+using SwipeArena.UI;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace SwipeArena

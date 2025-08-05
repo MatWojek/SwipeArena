@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SwipeArena
+namespace SwipeArena.Animations
 {
-    internal interface IAnimation
+    internal class IAnimation
     {
     }
 }

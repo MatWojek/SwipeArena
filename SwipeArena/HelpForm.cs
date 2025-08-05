@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SwipeArena.Config;
+using SwipeArena.Helpers;
+using SwipeArena.UI;
 
 namespace SwipeArena
 {
@@ -76,7 +79,14 @@ namespace SwipeArena
 
                 var allControls = panelSettings.Controls.Cast<Control>().ToList();
 
-                AdjustControlLayoutForSettingsMedium(allControls);
+                if (ClientSize.Width < 1336)
+                {
+                    AdjustControlLayoutForSettingsSmall(allControls);
+                }
+                else
+                {
+                    AdjustControlLayoutForSettingsMedium(allControls);
+                }
             }
 
             catch (Exception ex)

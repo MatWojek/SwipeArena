@@ -10,6 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using SwipeArena.Helpers;
+using SwipeArena.UI;
+using SwipeArena.Config;
 
 // TODO: 
 // Przed wyjściem wyskoczy MessageBox z pytaniem czy zapisać zmiany 
@@ -24,7 +27,7 @@ namespace SwipeArena
 {
     public partial class SettingsForm : BaseForm
     {
-        Button resetButton, saveButton, helpButton, exitButton, returnToMenuButton, statsButton;
+        Button resetButton, saveButton, helpButton, exitButton, returnToMenuButton, statsButton, loadSaveButton, loadSettingsButton, returnButton;
 
         TrackBar volumeMusic;
 
@@ -40,13 +43,15 @@ namespace SwipeArena
 
         SettingsData settings = SettingsData.Instance;
 
+        SaveLoad _saveLoad = new SaveLoad();
+
         public SettingsForm()
         {
 
             try
             {
                 InitializeComponent();
-
+               
                 // Ustawienia Formularza 
                 LoadBackgroundImage("images/background/settingsImage.png");
                 SettingsHelper.ApplySettings(this, "Ustawienia");
@@ -201,11 +206,29 @@ namespace SwipeArena
             };
             panelSettings.Controls.Add(aiCheckBox);
 
+            // Przycisk Wczytaj Ustawienia
+            loadSettingsButton = UIHelper.CreateButton(
+                title: "LoadSettings",
+                text: "Wczytaj Ustawienia",
+                backColor: Color.FromArgb(67, 203, 107),
+                foreColor: Color.White,
+                size: new Size(ClientSize.Width / 8, 40),
+                location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 200),
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize,
+                fontStyle: FontStyle.Bold
+            );
+            loadSettingsButton.Click += (s, e) =>
+            {
+                settings.LoadFromSelectedFile();
+                UpdateSettingsUI();
+            };
+            panelSettings.Controls.Add(loadSettingsButton);
 
-            // Przycisk Statystyki
-            statsButton = UIHelper.CreateButton(
-                title: "StatsButton",
-                text: "Statystyki",
+            // Przycisk Wczytaj Ustawienia
+            loadSaveButton = UIHelper.CreateButton(
+                title: "LoadSave",
+                text: "Wczytaj Zapis",
                 backColor: Color.FromArgb(67, 203, 107),
                 foreColor: Color.White,
                 size: new Size(ClientSize.Width / 3, 40),
@@ -214,23 +237,8 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            statsButton.Click += StatsButton_Click;
-            panelSettings.Controls.Add(statsButton);
-
-            // Przycisk Wróć do Menu
-            returnToMenuButton = UIHelper.CreateButton(
-                title: "ReturnMenu",
-                text: "Wróć do Menu",
-                backColor: Color.FromArgb(255, 102, 102),
-                foreColor: Color.White,
-                size: new Size(ClientSize.Width / 3, 40),
-                location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 250),
-                font: BasicSettings.FontFamily,
-                fontSize: BasicSettings.FontSize,
-                fontStyle: FontStyle.Bold
-            );
-            returnToMenuButton.Click += ReturnToMenuButton_Click;
-            panelSettings.Controls.Add(returnToMenuButton);
+            loadSaveButton.Click += (s, e) => _saveLoad.LoadFromSelectedFile();
+            panelSettings.Controls.Add(loadSaveButton);
 
             // Przycisk Zresetuj
             resetButton = UIHelper.CreateButton(
@@ -262,11 +270,26 @@ namespace SwipeArena
             saveButton.Click += SaveButton_Click;
             panelSettings.Controls.Add(saveButton);
 
+            // Przycisk Statystyki
+            statsButton = UIHelper.CreateButton(
+                title: "StatsButton",
+                text: "Statystyki",
+                backColor: Color.FromArgb(66, 197, 230),
+                foreColor: Color.White,
+                size: new Size(ClientSize.Width / 3, 40),
+                location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 200),
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize,
+                fontStyle: FontStyle.Bold
+            );
+            statsButton.Click += StatsButton_Click;
+            panelSettings.Controls.Add(statsButton);
+
             // Przycisk Pomocy
             helpButton = UIHelper.CreateButton(
                 title: "HelpButton",
                 text: "Pomoc",
-                backColor: Color.FromArgb(67, 203, 107),
+                backColor: Color.FromArgb(66, 197, 230),
                 foreColor: Color.White,
                 size: new Size(ClientSize.Width / 3, 40),
                 location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 100),
@@ -276,6 +299,21 @@ namespace SwipeArena
                 );
             helpButton.Click += HelpButton_Click;
             panelSettings.Controls.Add(helpButton);
+
+            // Przycisk Wróć do Menu
+            returnToMenuButton = UIHelper.CreateButton(
+                title: "ReturnMenu",
+                text: "Wróć do Menu",
+                backColor: Color.FromArgb(255, 102, 102),
+                foreColor: Color.White,
+                size: new Size(ClientSize.Width / 3, 40),
+                location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 250),
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize,
+                fontStyle: FontStyle.Bold
+            );
+            returnToMenuButton.Click += ReturnToMenuButton_Click;
+            panelSettings.Controls.Add(returnToMenuButton);
 
             // Przycisk Wyjście
             exitButton = UIHelper.CreateButton(
@@ -291,6 +329,21 @@ namespace SwipeArena
                 );
             exitButton.Click += ExitButton_Click;
             panelSettings.Controls.Add(exitButton);
+
+            // Przycisk Powrotu
+            returnButton = UIHelper.CreateButton(
+                title: "Return",
+                text: "Powrót",
+                backColor: Color.FromArgb(255, 102, 102),
+                foreColor: Color.White,
+                size: new Size(ClientSize.Width / 3, 40),
+                location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height - 250),
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize,
+                fontStyle: FontStyle.Bold
+            );
+            returnButton.Click += ExitSettingsButton_Click;
+            panelSettings.Controls.Add(returnButton);
 
             var allControls = panelSettings.Controls.Cast<Control>().ToList();
 
@@ -315,6 +368,26 @@ namespace SwipeArena
                 }
                 ArrangeSettingsLayout();
             };
+        }
+
+        void UpdateSettingsUI()
+        {
+            // Aktualizacja suwaka głośności
+            volumeMusic.Value = (int)(settings.Volume * 100);
+            volumeLabel.Text = $"Zmiana głośności [{Math.Round(settings.Volume * 100)}%]";
+
+            // Aktualizacja listy rozwijanej rozdzielczości
+            var resolutionIndex = changeResolution.Items.IndexOf($"{settings.Resolution.X}x{settings.Resolution.Y}");
+            if (resolutionIndex >= 0)
+            {
+                changeResolution.SelectedIndex = resolutionIndex;
+            }
+
+            // Aktualizacja stanu CheckBoxa AI
+            aiCheckBox.Checked = settings.IsAIEnabled;
+
+            // Aktualizacja rozmiaru okna
+            Size = new Size(settings.Resolution.X, settings.Resolution.Y);
         }
 
         /// <summary>
@@ -421,7 +494,6 @@ namespace SwipeArena
         {
             try
             {
-
                 var saveLoad = new SaveLoad();
 
                 saveLoad.Load();
@@ -457,13 +529,41 @@ namespace SwipeArena
         {
             try
             {
-                settings.Resolution = new Point(BasicSettings.DefaultX, BasicSettings.DefaultY);
-                settings.IsVolumeOn = BasicSettings.DefaultIsVolumeOn;
-                settings.Volume = BasicSettings.DefaultMusicVolume;
-                settings.IsAIEnabled = BasicSettings.DefualtIsAIEnabled;
+                var result = MessageBox.Show(
+                "Czy chcesz zresetować ustawienia?",
+                "Zapisywanie ustawień",
+                MessageBoxButtons.YesNoCancel,
+                MessageBoxIcon.Question
+                );
 
-                // Aktualizacja UI
-                Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+                if (result == DialogResult.Yes)
+                {
+                    
+                    settings.Reset();
+
+                    var result2 = MessageBox.Show(
+                    "Czy chcesz zresetować zapis gry?",
+                    "Zapisywanie ustawień",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Question
+                    );
+
+                    if (result == DialogResult.Yes)
+                    {
+                        _saveLoad.Reset();
+                    }
+                    else if (result == DialogResult.Cancel)
+                    {
+                        return;
+                    }
+                }
+                else if (result == DialogResult.Cancel)
+                {
+                    // Jeśli użytkownik wybierze "Cancel", zakończ metodę
+                    return;
+                }
+
+                UpdateSettingsUI();
 
                 MessageBox.Show("Ustawienia zostały zresetowane do domyślnych.", "Reset ustawień", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

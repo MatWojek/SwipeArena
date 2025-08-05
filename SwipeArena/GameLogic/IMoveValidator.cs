@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SwipeArena
+namespace SwipeArena.GameLogic
 {
-    internal interface IGameLogic
+    internal interface IMoveValidator
     {
     }
 }

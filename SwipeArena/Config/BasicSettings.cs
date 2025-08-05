@@ -5,7 +5,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SwipeArena
+namespace SwipeArena.Config
 {
     /// <summary>
     /// Klasa z podstawowymi ustawieniami

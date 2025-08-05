@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SwipeArena
+namespace SwipeArena.GameLogic
 {
-    internal class Animation
+    internal interface IGameRules
     {
     }
 }

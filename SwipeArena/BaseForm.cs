@@ -9,6 +9,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SwipeArena.Config;
+using SwipeArena.Helpers;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SwipeArena
 {
@@ -38,7 +41,7 @@ namespace SwipeArena
         {
             Task.Factory.StartNew(() =>
             {
-                return Image.FromFile(imagePath);
+                return System.Drawing.Image.FromFile(imagePath);
             })
             .ContinueWith(t =>
             {
@@ -93,7 +96,7 @@ namespace SwipeArena
             {
                 var previousForm = formHistory.Pop(); // Pobranie poprzedniego okna z historii
                 previousForm.Show();
-                Hide(); // Zamknięcie obecnego okna
+                Hide(); // Zamknięcie obecnego okna}
             }
             else
             {
@@ -113,7 +116,7 @@ namespace SwipeArena
             {
                 formHistory.Clear(); // Czyszczenie historii przy zamknięciu aplikacji
             }
-        }
+        } 
 
         /// <summary>
         /// Ustawienie pozycji i rozmiaru dla listy przycisków 
@@ -167,7 +170,7 @@ namespace SwipeArena
                     int maxWidth = (ctrl.Parent?.ClientSize.Width ?? ClientSize.Width) - 40;
                     width = Math.Min((int)(ClientSize.Width * 0.6), maxWidth);
 
-                    label.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
+                    label.Font = new System.Drawing.Font(BasicSettings.FontFamily, BasicSettings.FontSize, FontStyle.Bold);
                     label.AutoSize = false;
                     label.MaximumSize = new Size(width, 0); 
                     label.Size = new Size(width, 0);
@@ -186,7 +189,7 @@ namespace SwipeArena
                     // Tworzymy Label dla TrackBara
                     System.Windows.Forms.Label trackBarLabel = new System.Windows.Forms.Label();
                     trackBarLabel.Text = $"{trackBar.Name}: {trackBar.Value}";
-                    trackBarLabel.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1);
+                    trackBarLabel.Font = new System.Drawing.Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1);
                     trackBarLabel.AutoSize = true;
                     trackBarLabel.Location = new Point((ClientSize.Width - width) / 2, currentY);
 
@@ -200,9 +203,12 @@ namespace SwipeArena
                 {
                     width = (int)(ClientSize.Width * 0.5);
                 }
-                else if (ctrl is Button)
+                else if (ctrl is Button button)
                 {
-                    width = Math.Max(150, ClientSize.Width / 3);
+                    width = Math.Max(120, ClientSize.Width / 4);
+                    height = 35;
+
+                    button.Font = new System.Drawing.Font(BasicSettings.FontFamily, BasicSettings.FontSize - 2, FontStyle.Bold);
                 }
 
                 // Ustaw rozmiar i pozycję
@@ -228,8 +234,8 @@ namespace SwipeArena
             int spacing = 20;
             int currentY = panelPadding;
 
-            int buttonWidth = 250;
-            int buttonHeight = 50;
+            int buttonWidth = 200;
+            int buttonHeight = 40;
             int buttonSpacing = 10;
             int buttonsPerRow = 2;
             int buttonRowXStart = (ClientSize.Width - (buttonWidth * buttonsPerRow + buttonSpacing * (buttonsPerRow - 1))) / 2;
@@ -247,7 +253,7 @@ namespace SwipeArena
                     int maxWidth = (ctrl.Parent?.ClientSize.Width ?? ClientSize.Width) - 40; 
                     width = Math.Min((int)(ClientSize.Width * 0.6), maxWidth);
 
-                    label.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize);
+                    label.Font = new System.Drawing.Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1, FontStyle.Bold);
                     label.AutoSize = false;
                     label.MaximumSize = new Size(width, 0); 
                     label.Size = new Size(width, 0);
@@ -270,7 +276,7 @@ namespace SwipeArena
                     // Tworzymy Label dla TrackBara
                     System.Windows.Forms.Label trackBarLabel = new System.Windows.Forms.Label();
                     trackBarLabel.Text = $"{trackBar.Name}: {trackBar.Value}";
-                    trackBarLabel.Font = new Font(BasicSettings.FontFamily, BasicSettings.FontSize - 1);
+                    trackBarLabel.Font = new System.Drawing.Font(BasicSettings.FontFamily, BasicSettings.FontSize - 2);
                     trackBarLabel.AutoSize = true;
                     trackBarLabel.Location = new Point((ClientSize.Width - width) / 2, currentY);
 
@@ -281,11 +287,13 @@ namespace SwipeArena
                     currentY += trackBarLabel.Height + 5;
                 }
 
-                else if (ctrl is Button)
+                else if (ctrl is Button button)
                 {
                     // Ustaw rozmiar przycisków
                     width = buttonWidth;
                     height = buttonHeight;
+
+                    button.Font = new System.Drawing.Font(BasicSettings.FontFamily, BasicSettings.FontSize - 4, FontStyle.Bold);
 
                     // Oblicz pozycję przycisku w rzędzie
                     int rowX = buttonRowXStart + (buttonIndex % buttonsPerRow) * (buttonWidth + buttonSpacing);

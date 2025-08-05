@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SwipeArena
+namespace SwipeArena.Helpers
 {
     /// <summary>
     /// Klasa do ustawiania wielkości okna

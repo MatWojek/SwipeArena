@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SwipeArena
+namespace SwipeArena.Models
 {
     /// <summary>
     ///  Interfejs do tworzenia elementów w grze

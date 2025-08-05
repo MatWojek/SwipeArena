@@ -1,4 +1,6 @@
-﻿namespace SwipeArena
+﻿using SwipeArena.Helpers;
+
+namespace SwipeArena
 {
     public partial class StartWindowForm : Form
     {

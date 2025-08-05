@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SwipeArena.Models;
 
 // TODO: 
 // Tryb podpowiedzi: analiza planszy i sugestia najlepszego ruchu
@@ -13,10 +14,43 @@ using System.Threading.Tasks;
 // Oblicz wartość punktową każdej kombinacji 
 // Wybierz najlepszą 
 
-namespace SwipeArena
+namespace SwipeArena.Helpers
 {
     class AIHelper
     {
+
+        public void PlayAutomatically(IGameElement[,] board, Func<bool> isAIEnabled)
+        {
+            while (isAIEnabled())
+            {
+                var bestMove = SuggestBestMove(board);
+
+                // Jeśli nie ma możliwych ruchów, zakończ
+                if (bestMove.startX == -1) break;
+
+                // Wykonaj ruch
+                ExecuteMove(board, bestMove);
+
+                // Odśwież planszę (jeśli wymagane)
+                RefreshBoard(board);
+            }
+        }
+
+        private void ExecuteMove(IGameElement[,] board, (int startX, int startY, int endX, int endY) move)
+        {
+            // Zamień elementy na planszy
+            (board[move.startY, move.startX], board[move.endY, move.endX]) =
+                (board[move.endY, move.endX], board[move.startY, move.startX]);
+
+            // Możesz dodać logikę do obsługi punktacji lub innych efektów
+        }
+
+        private void RefreshBoard(IGameElement[,] board)
+        {
+            // Logika odświeżania planszy, np. usuwanie dopasowań, przesuwanie elementów itp.
+            // To zależy od implementacji Twojej gry.
+        }
+
         /// <summary>
         /// Analizuje planszę i sugeruje najlepszy ruch.
         /// </summary>
@@ -33,7 +67,7 @@ namespace SwipeArena
         /// </summary>
         /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
         /// <returns>Lista możliwych ruchów.</returns>
-        private List<(int startX, int startY, int endX, int endY)> FindPossibleMoves(IGameElement[,] board)
+        List<(int startX, int startY, int endX, int endY)> FindPossibleMoves(IGameElement[,] board)
         {
             int rows = board.GetLength(0);
             int cols = board.GetLength(1);
@@ -83,7 +117,7 @@ namespace SwipeArena
         /// <param name="moves">Lista możliwych ruchów.</param>
         /// <param name="board">Dwuwymiarowa tablica reprezentująca planszę.</param>
         /// <returns>Najlepszy ruch.</returns>
-        private (int startX, int startY, int endX, int endY) EvaluateBestMove(List<(int startX, int startY, int endX, int endY)> moves, IGameElement[,] board)
+        (int startX, int startY, int endX, int endY) EvaluateBestMove(List<(int startX, int startY, int endX, int endY)> moves, IGameElement[,] board)
         {
             if (moves.Count == 0) return (-1, -1, -1, -1);
             return moves[0];

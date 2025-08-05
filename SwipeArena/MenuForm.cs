@@ -1,4 +1,7 @@
 using Microsoft.VisualBasic.ApplicationServices;
+using SwipeArena.Config;
+using SwipeArena.Helpers;
+using SwipeArena.UI;
 using System.Threading;
 
 namespace SwipeArena
@@ -6,9 +9,7 @@ namespace SwipeArena
     public partial class MenuForm : BaseForm
     { 
 
-        Button startButton;
-        Button settingsButton;
-        Button exitButton;
+        Button _startButton, _settingsButton, _exitButton;
 
         public MenuForm()
         {
@@ -21,7 +22,6 @@ namespace SwipeArena
                 SettingsHelper.ApplySettings(this, "Menu");
 
                 AddButtons();
-                
 
             }
             catch (Exception ex)
@@ -37,7 +37,7 @@ namespace SwipeArena
         void AddButtons()
         {
             // Przycisk Start 
-            startButton = UIHelper.CreateButton(
+            _startButton = UIHelper.CreateButton(
                 title: "Start",
                 text: "Start",
                 backColor: Color.FromArgb(66, 197, 230),
@@ -46,11 +46,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            startButton.Click += StartButton_Click;
-            Controls.Add(startButton);
+            _startButton.Click += _startButton_Click;
+            Controls.Add(_startButton);
 
             // Przycisk Ustawienia
-            Button settingsButton = UIHelper.CreateButton(
+            _settingsButton = UIHelper.CreateButton(
                 title: "Settings",
                 text: "Ustawienia",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -59,11 +59,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            settingsButton.Click += SettingsButton_Click;
-            Controls.Add(settingsButton);
+            _settingsButton.Click += _settingsButton_Click;
+            Controls.Add(_settingsButton);
 
             // Przycisk Wyjœcie
-            exitButton = UIHelper.CreateButton (
+            _exitButton = UIHelper.CreateButton (
                 title: "Exit",
                 text: "WyjdŸ z Gry",
                 backColor: Color.FromArgb(255, 102, 102),
@@ -72,10 +72,10 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            exitButton.Click += (s, e) => Close();
-            Controls.Add(exitButton);
+            _exitButton.Click += (s, e) => Close();
+            Controls.Add(_exitButton);
 
-            var buttons = new List<Control> { startButton, settingsButton, exitButton };
+            var buttons = new List<Control> { _startButton, _settingsButton, _exitButton };
             AdjustButtonPositions(buttons);
         }
 
@@ -84,7 +84,7 @@ namespace SwipeArena
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void StartButton_Click(object? sender, EventArgs e)
+        void _startButton_Click(object? sender, EventArgs e)
         {
             // Przejœcie do formularza SelectedLevel
             var selectedLevelForm = new SelectLevelForm();
@@ -96,7 +96,7 @@ namespace SwipeArena
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void SettingsButton_Click(object? sender, EventArgs e)
+        void _settingsButton_Click(object? sender, EventArgs e)
         {
             // Przejœcie do formularza Ustawienia
             var settingsForm = new SettingsForm();

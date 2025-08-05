@@ -3,6 +3,10 @@ using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Windows.Forms;
+using SwipeArena.Config;
+using SwipeArena.Helpers;
+using SwipeArena.Models;
+using SwipeArena.UI;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 // TODO:
@@ -22,13 +26,12 @@ namespace SwipeArena
 {
     public partial class LevelForm : BaseForm
     {
-        Stopwatch gameStopwatch = new Stopwatch();
+        Stopwatch _gameStopwatch = new Stopwatch();
 
-        AIHelper ai = new AIHelper();
-        List<IGameElement> elementTypes = new();
-        IGameElement[,] grid;
-        PictureBox firstClicked = null;
-        PictureBox dragged = null;
+        AIHelper _ai = new AIHelper();
+        List<IGameElement> _elementTypes = new();
+        IGameElement[,] _grid;
+        PictureBox firstClicked = null, dragged = null;
 
         int rows, cols, xSize, ySize;
         int movesLeft, pointsCollected, pointsToWin;
@@ -46,9 +49,27 @@ namespace SwipeArena
             InitializeComponent();
             LoadBackgroundImage("images/background/background.png");
 
+            // Obsługa AI dla poziomu
+            //if (settings.IsAIEnabled)
+            //{
+            //    var aiHelper = new AIHelper();
+            //    aiHelper.PlayAutomatically(board, () => settings.IsAIEnabled);
+            //}
+
             currentLevel = level;
             RandomBoardSize(level);
-            xSize = cols < 6 ? 128 : 72;
+            if(cols <= 4 && rows <= 5)
+            {
+                xSize = 128;
+            }
+            else if(cols > 4 && cols < 6 && rows < 5)
+            {
+                xSize = 96;
+            }
+            else
+            {
+                xSize = 72;
+            }
             ySize = xSize;
 
             SettingsHelper.ApplySettings(this, $"Level {level}");
@@ -171,7 +192,7 @@ namespace SwipeArena
             // Animacja zamiany
             AnimationSwap(pos1, pos2, box1, box2, onComplete: () =>
             {
-                // Zamiana elementów w gridzie
+                // Zamiana elementów w _gridzie
                 Swap(pos1, pos2);
 
                 if (FindMatches().Count > 0)
@@ -254,7 +275,12 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            settingsButton.Click += (s, e) => { new SettingsForm().ShowDialog(); SettingsHelper.ApplySettings(this, "Ustawienia"); };
+            settingsButton.Click += (s, e) => 
+            {
+                var settingsForm = new SettingsForm();
+                NavigateToForm(this, settingsForm);
+            };
+
             Controls.AddRange(new Control[] { movesLabel, pointsLabel, settingsButton, hintButton, });
 
             var allControls = Controls.Cast<Control>().ToList();
@@ -265,7 +291,7 @@ namespace SwipeArena
 
         void HintButton_Click(object sender, EventArgs e)
         {
-            var bestMove = ai.SuggestBestMove(grid);
+            var bestMove = _ai.SuggestBestMove(_grid);
             if (bestMove.startX != -1)
             {
                 HighlightHint(bestMove);
@@ -302,7 +328,7 @@ namespace SwipeArena
         /// </summary>
         void GenerateLevel()
         {
-            elementTypes = new()
+            _elementTypes = new()
             {
                 new GameElement("Helmet", Image.FromFile("images/level/helmet.png"), Point.Empty),
                 new GameElement("GoldShield", Image.FromFile("images/level/gold_shield.png"), Point.Empty),
@@ -311,13 +337,13 @@ namespace SwipeArena
                 new GameElement("Sword", Image.FromFile("images/level/sword.png"), Point.Empty),
             };
 
-            grid = new IGameElement[rows, cols];
+            _grid = new IGameElement[rows, cols];
             Controls.OfType<PictureBox>().ToList().ForEach(p => { Controls.Remove(p); p.Dispose(); });
 
             Random random = new();
             for (int y = 0; y < rows; y++)
                 for (int x = 0; x < cols; x++)
-                    AddElement(random.Next(elementTypes.Count), x, y);
+                    AddElement(random.Next(_elementTypes.Count), x, y);
 
             if (!HasValidMove()) ShuffleBoard();
             ProcessMatches();
@@ -335,7 +361,7 @@ namespace SwipeArena
             {
                 for (int x = 0; x < cols; x++)
                 {
-                    elements.Add(grid[y, x]);
+                    elements.Add(_grid[y, x]);
                 }
             }
 
@@ -351,7 +377,7 @@ namespace SwipeArena
                 {
                     for (int x = 0; x < cols; x++)
                     {
-                        grid[y, x] = elements[index++];
+                        _grid[y, x] = elements[index++];
                     }
                 }
 
@@ -365,7 +391,7 @@ namespace SwipeArena
                 {
                     int x = position.X;
                     int y = position.Y;
-                    pic.Image = grid[y, x].Icon;
+                    pic.Image = _grid[y, x].Icon;
                 }
             }
 
@@ -381,8 +407,8 @@ namespace SwipeArena
         /// <param name="y"></param>
         void AddElement(int typeIndex, int x, int y)
         {
-            var element = elementTypes[typeIndex];
-            grid[y, x] = element;
+            var element = _elementTypes[typeIndex];
+            _grid[y, x] = element;
 
             var pic = new PictureBox
             {
@@ -466,16 +492,16 @@ namespace SwipeArena
         bool CanFormMatch(int x1, int y1, int x2, int y2)
         {
             // Zamiana elementów
-            IGameElement temp = grid[y1, x1];
-            grid[y1, x1] = grid[y2, x2];
-            grid[y2, x2] = temp;
+            IGameElement temp = _grid[y1, x1];
+            _grid[y1, x1] = _grid[y2, x2];
+            _grid[y2, x2] = temp;
 
             // Sprawdzenie, czy powstało połączenie
             bool hasMatch = FindMatches().Count > 0;
 
             // Przywrócenie oryginalnego stanu
-            grid[y2, x2] = grid[y1, x1];
-            grid[y1, x1] = temp;
+            _grid[y2, x2] = _grid[y1, x1];
+            _grid[y1, x1] = temp;
 
             return hasMatch;
         }
@@ -505,7 +531,7 @@ namespace SwipeArena
         /// <param name="b"></param>
         void Swap(Point a, Point b)
         {
-            (grid[a.Y, a.X], grid[b.Y, b.X]) = (grid[b.Y, b.X], grid[a.Y, a.X]);
+            (_grid[a.Y, a.X], _grid[b.Y, b.X]) = (_grid[b.Y, b.X], _grid[a.Y, a.X]);
         }
 
 
@@ -528,8 +554,8 @@ namespace SwipeArena
         /// </summary>
         void CenterElements()
         {
-            int gridW = cols * xSize, gridH = rows * ySize;
-            int startX = (ClientSize.Width - gridW) / 2;
+            int _gridW = cols * xSize, _gridH = rows * ySize;
+            int startX = (ClientSize.Width - _gridW) / 2;
 
             // Rzutujemy Controls na IEnumerable<Control>
             int topUIBottom = Controls
@@ -655,10 +681,10 @@ namespace SwipeArena
 
             save.BestWinStreak = Math.Max(save.BestWinStreak, save.CurrentWinStreak);
 
-            if (gameStopwatch != null)
+            if (_gameStopwatch != null)
             {
-                save.TimeGame += gameStopwatch.Elapsed.TotalSeconds;
-                gameStopwatch.Reset();
+                save.TimeGame += _gameStopwatch.Elapsed.TotalSeconds;
+                _gameStopwatch.Reset();
             }
 
             save.Save();
@@ -710,9 +736,9 @@ namespace SwipeArena
             {
                 for (int x = 0; x < cols - 2; x++)
                 {
-                    string name1 = grid[y, x].Name;
-                    string name2 = grid[y, x + 1].Name;
-                    string name3 = grid[y, x + 2].Name;
+                    string name1 = _grid[y, x].Name;
+                    string name2 = _grid[y, x + 1].Name;
+                    string name3 = _grid[y, x + 2].Name;
 
                     if (name1 == name2 && name2 == name3)
                     {
@@ -728,9 +754,9 @@ namespace SwipeArena
             {
                 for (int y = 0; y < rows - 2; y++)
                 {
-                    string name1 = grid[y, x].Name;
-                    string name2 = grid[y + 1, x].Name;
-                    string name3 = grid[y + 2, x].Name;
+                    string name1 = _grid[y, x].Name;
+                    string name2 = _grid[y + 1, x].Name;
+                    string name3 = _grid[y + 2, x].Name;
 
                     if (name1 == name2 && name2 == name3)
                     {
@@ -757,9 +783,9 @@ namespace SwipeArena
             var originalLocation1 = box1.Location;
             var originalLocation2 = box2.Location;
 
-            var animationTimer = new System.Windows.Forms.Timer { Interval = 10 };
+            var animationTimer = new System.Windows.Forms.Timer { Interval = 2 };
             int step = 0;
-            int totalSteps = 20;
+            int totalSteps = 4;
 
             animationTimer.Tick += (s, e) =>
             {
@@ -855,7 +881,7 @@ namespace SwipeArena
                     int y = match.Y;
 
                     // Usuwanie elementu z siatki
-                    grid[y, x] = null;
+                    _grid[y, x] = null;
 
                     foreach (Control control in Controls)
                     {
@@ -873,10 +899,10 @@ namespace SwipeArena
                 {
                     for (int x = 0; x < cols; x++)
                     {
-                        if (grid[y, x] == null)
+                        if (_grid[y, x] == null)
                         {
-                            IGameElement newElement = elementTypes[random.Next(elementTypes.Count)];
-                            grid[y, x] = newElement;
+                            IGameElement newElement = _elementTypes[random.Next(_elementTypes.Count)];
+                            _grid[y, x] = newElement;
 
                             PictureBox pic = new PictureBox
                             {
