@@ -31,7 +31,7 @@ Plik: `AIHelper.cs`
 
 **Tryby działania:**
 
-- 🔍 **Tryb podpowiedzi**: analiza planszy i sugestia najlepszego ruchu (np. zaznacza najlepsze do połączenia obiekty)
+- 🔍 **Tryb podpowiedzi**: analiza planszy i sugestia najlepszego ruchu, zaznacza najlepsze do połączenia obiekty
 - 🤖 **Tryb auto-gracza**: bot automatycznie wykonuje ruchy za gracza
 
 ### Działanie dla AI:
