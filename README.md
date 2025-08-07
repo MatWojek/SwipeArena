@@ -5,7 +5,7 @@
 
 - ✅ Menu główne z wyborem: **Start, Ustawienia, Wyjście**
 - ✅ Obsługa wielu poziomów - taki slider do przewijania po poziomach z góry na dół (scroll)
-- ✅ 15 leveli ale losowo generowane
+- ✅ 15 losowo generowanych poziomów
 - ✅ Ekran „Wygrana” i „Przegrana”
 - ✅ Statystyki gracza 
 - ✅ Ustawienia gry (np. dźwięk, ustawienia rozdzielczości, wczytanie zapisu, wczytanie ustawień)
