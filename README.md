@@ -46,7 +46,8 @@ Plik: `AIHelper.cs`
 
 ## 🧩 Przyszłe rozszerzenia
 
-- 🎨 Skórki / motywy graficzne
+- 🎨 Zmiana skórki / motywów graficznych (np. przy większej ilości poziomów)
+- 🎆 Ulepszenie animacji
 - 🌐 Tryb multiplayer LAN lub online
 - 📱 Port na Androida (Xamarin)
 
