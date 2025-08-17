@@ -3,19 +3,16 @@
 
 ## ✅ Funkcjonalności
 
-- ✅ Menu główne z wyborem: **Start, Poziomy, Ustawienia, Wyjście**
+- ✅ Menu główne z wyborem: **Start, Ustawienia, Wyjście**
 - ✅ Obsługa wielu poziomów - taki slider do przewijania po poziomach z góry na dół (scroll)
-- ✅ 10 leveli ale jako losowe
-- ✅ Losowe generowanie poziomu, jego wyglądu (czyli kształty losowe)
-- ✅ Quick eventy, które np. dają jakiegoś dodatkowego boosta
-- ✅ Wygląd jako rozwalanie ściany zamku a za ścianą będą rycerze obraniający zamek
-- ✅ Levele jako tarcze albo zamki takie od góry
-- ✅ Pauza gry z możliwością kontynuacji lub restartu
-- ✅ Ekran „Ukończono poziom” i „Przegrana”
-- ✅ Statystyki gracza
-- ✅ Ustawienia gry (np. dźwięk, język)
+- ✅ 15 losowo generowanych poziomów
+- ✅ Ekran „Wygrana” i „Przegrana”
+- ✅ Statystyki gracza 
+- ✅ Ustawienia gry (np. dźwięk, ustawienia rozdzielczości, wczytanie zapisu, wczytanie ustawień)
+- ✅ Automatyczny zapis w trakcie gry i po grze (w plikach JSON) 
+- ✅ Skalowalny interfejs, który dopasowuje się do okna po zmianie rozdzielczości 
 - ✅ **AI Bot** – automatyczne podpowiedzi lub pełna gra przez komputer
-- 
+
 
 ---
 
@@ -34,11 +31,11 @@ Plik: `AIHelper.cs`
 
 **Tryby działania:**
 
-- 🔍 **Tryb podpowiedzi**: analiza planszy i sugestia najlepszego ruchu (np. zaznacza najlepsze do połączenia obiekty)
+- 🔍 **Tryb podpowiedzi**: analiza planszy i sugestia najlepszego ruchu, zaznacza najlepsze do połączenia obiekty
 - 🤖 **Tryb auto-gracza**: bot automatycznie wykonuje ruchy za gracza
 
-### Plan działania dla AI:
-1. Przeskanuj planszę (np. tablica 2D z elementami)
+### Działanie dla AI:
+1. Przeskanuj planszę
 2. Wyszukaj możliwe kombinacje (min. 3 w rzędzie)
 3. Oblicz wartość punktową każdej kombinacji
 4. Wybierz najlepszą i:
@@ -49,9 +46,9 @@ Plik: `AIHelper.cs`
 
 ## 🧩 Przyszłe rozszerzenia
 
-- 🎨 Skórki / motywy graficzne
+- 🎨 Zmiana skórki / motywów graficznych (np. przy większej ilości poziomów)
+- 🎆 Ulepszenie animacji
 - 🌐 Tryb multiplayer LAN lub online
-- 🔐 Zapisywanie postępów (plik JSON / baza danych)
 - 📱 Port na Androida (Xamarin)
 
 ---
