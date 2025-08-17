@@ -19,6 +19,7 @@ namespace SwipeArena.Config
         public static double DefaultMusicVolume { get; } = 0.5;
         public static bool DefaultIsVolumeOn { get; } = true;
         public static bool DefualtIsAIEnabled { get; } = false;
+        public static int Levels { get; } = 15;
 
     }
 

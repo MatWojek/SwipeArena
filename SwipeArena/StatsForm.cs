@@ -49,13 +49,13 @@ namespace SwipeArena
                 infoLabel = UIHelper.CreateLabel(
                 title: "GameInfoLabel",
                 text: $"🎮 Swipe Arena Statystyki\n\n" +
-                       $"Ostatnia ilość wygranych pod rząd: {saveLoad.CurrentWinStreak}\n" +
-                       $"Najlepsza ilość wygranych pod rząd: {saveLoad.BestWinStreak}\n" +
-                       $"Ostatni grany poziom: {saveLoad.LastLevelPlayed}\n" +
-                       $"Ilość ukończonych poziomów: {saveLoad.LevelCompleted}\n" +
-                       $"Najwyższy wynik zdobyty w pojedynczej grze: {saveLoad.MaxPoints}\n" +
-                       $"Łącznie zdobyte punkty: {saveLoad.TotalPoints}\n" +
-                       $"Łączny czas gry: {saveLoad.TimeGame}\n\n",
+                       $"Ostatnia ilość wygranych pod rząd: {saveLoad.GetCurrentWinStreak()}\n" +
+                       $"Najlepsza ilość wygranych pod rząd: {saveLoad.GetBestWinStreak()}\n" +
+                       $"Ostatni grany poziom: {saveLoad.GetLastLevelPlayed()}\n" +
+                       $"Ilość ukończonych poziomów: {saveLoad.GetLevelCompleted()}\n" +
+                       $"Najwyższy wynik zdobyty w pojedynczej grze: {saveLoad.GetMaxPoints()}\n" +
+                       $"Łącznie zdobyte punkty: {saveLoad.GetTotalPoints()}\n" +
+                       $"Łączny czas gry: {saveLoad.GetTimeGame()}\n\n",
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
                 foreColor: Color.Black,

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Animations
 {
-    internal class IAnimation
-    {
+    public interface IAnimation
+    { 
+       void Animation(AnimationContext context, Action onComplete = null);
     }
 }

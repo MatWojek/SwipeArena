@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Models
 {
-    internal class GameElement : IGameElement
+    public class GameElement : IGameElement
     {
         public string Name { get; set; }
         public Image Icon { get; set; }
@@ -17,6 +17,10 @@ namespace SwipeArena.Models
             Name = name;
             Icon = icon;
             Position = position;
+        }
+        public IGameElement Clone()
+        {
+            return new GameElement(Name, Icon, Position);
         }
 
         /// <summary>

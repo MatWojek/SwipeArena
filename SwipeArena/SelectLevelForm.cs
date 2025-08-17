@@ -11,10 +11,12 @@ namespace SwipeArena
 
         Button settingsButton, levelButton;
 
-        const int LEVELS = 15;
+        int _levels = BasicSettings.Levels;
         const int MARGIN = 100;
+
         Random random = new Random();
-        List<Button> levelButtons = new List<Button>();
+
+        List<Button> _levelButtons = new List<Button>();
 
         public SelectLevelForm()
         {
@@ -61,7 +63,7 @@ namespace SwipeArena
             };
             panel1.Controls.Add(settingsButton);
 
-            CreateLevelButtons();
+            Create_levelButtons();
 
             // Zmiana rozmiaru okna
             panel1.Resize += SelectLevel_Resize;
@@ -76,14 +78,14 @@ namespace SwipeArena
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void CreateLevelButtons()
+        void Create_levelButtons()
         {
             SaveLoad save = new SaveLoad();
             save.Load();
 
-            if (save.LevelCompleted < LEVELS)
+            if (save.GetLevelCompleted() < _levels)
             {
-                for (int i = 1; i <= save.LevelCompleted + 1; i++)
+                for (int i = 1; i <= save.GetLevelCompleted() + 1; i++)
                 {
                     int buttonWidth = 100;
                     int buttonHeight = 100;
@@ -103,7 +105,7 @@ namespace SwipeArena
                         fontSize: 10
                         );
 
-                    if (save.LevelCompleted + 1 == i)
+                    if (save.GetLevelCompleted() + 1 == i)
                     {
                         levelButton.BackColor = Color.FromArgb(66, 197, 230);
                     }
@@ -127,7 +129,7 @@ namespace SwipeArena
 
                     // Dodanie przycisku do panelu
                     panel1.Controls.Add(levelButton);
-                    levelButtons.Add(levelButton);
+                    _levelButtons.Add(levelButton);
                 }
             }
         }
@@ -155,14 +157,15 @@ namespace SwipeArena
         void SelectLevel_Resize(object sender, EventArgs e)
         {
             int buttonSize = Math.Min(panel1.Width / 10, 100);
-            int currentMargin = panel1.Height / (LEVELS + 2) + MARGIN;
+            int currentMargin = panel1.Height / (_levels + 2) + MARGIN;
 
-            for (int i = 0; i < levelButtons.Count; i++)
+            for (int i = 0; i < _levelButtons.Count; i++)
             {
-                Button levelButton = levelButtons[i];
+                Button levelButton = _levelButtons[i];
 
                 // Przeliczenie rozmiaru przycisku
                 levelButton.Size = new Size(buttonSize, buttonSize);
+
 
                 // Losowe przesunięcie w granicach 10 pikseli
                 int randomOffsetX = random.Next(-50, 50); 

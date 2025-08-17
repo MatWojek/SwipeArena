@@ -4,23 +4,12 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Windows.Forms;
 using SwipeArena.Config;
+using SwipeArena.GameLogic;
 using SwipeArena.Helpers;
 using SwipeArena.Models;
 using SwipeArena.UI;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
-
-// TODO:
-// Dodać podświetlnie tego co wybraliśmy (lub takie przybliżenie) (zrobione)  
-// Dodać żeby przesunięcie też było jakoś zasygnalizowane, co ze sobą zamieniliśmy 
-// Dodać, że jak nie ma ruchu to mieszamy poziom (do naprawienia)
-// Licznik ruchów i licznik połączeń które należy zdobyć zależy od poziomu
-// Dodać przycisk do ustawień i dodać nowe ustawienia gry, 
-// Przycisk cofania 
-// Przycisk powrotu do menu 
-// Progres jest zapisywany, i wyświetlany na ekranie, 
-// Progres to ile poziomów udało się zdobyća
-// Przy przyciśnięciu lub zmianie, zmienia się kolor na czerwony, żeby w 100% informować że te elementy są zmieniane lub wybrane
-
+using SwipeArena.Animations;
 
 namespace SwipeArena
 {
@@ -30,11 +19,9 @@ namespace SwipeArena
 
         AIHelper _ai = new AIHelper();
         List<IGameElement> _elementTypes = new();
-        IGameElement[,] _grid;
         PictureBox firstClicked = null, dragged = null;
 
-        int rows, cols, xSize, ySize;
-        int movesLeft, pointsCollected, pointsToWin;
+        int _elementSize;
 
         Label movesLabel, pointsLabel;
         Button settingsButton, hintButton;
@@ -43,6 +30,13 @@ namespace SwipeArena
         Point mouseDownPos;
 
         public static int currentLevel;
+
+        static GameBoard _board = new GameBoard();
+        static MoveValidator _move;
+        static GameRules _rules;
+
+        IAnimation _matchAnimation = new MatchAnimation();
+        IAnimation _swapAnimation = new SwapAnimation();
 
         public LevelForm(int level)
         {
@@ -57,25 +51,14 @@ namespace SwipeArena
             //}
 
             currentLevel = level;
-            RandomBoardSize(level);
-            if(cols <= 4 && rows <= 5)
-            {
-                xSize = 128;
-            }
-            else if(cols > 4 && cols < 6 && rows < 5)
-            {
-                xSize = 96;
-            }
-            else
-            {
-                xSize = 72;
-            }
-            ySize = xSize;
 
-            SettingsHelper.ApplySettings(this, $"Level {level}");
+            _board.RandomBoardSize(currentLevel);
+            _elementSize = _board.ElementSize();
 
-            pointsToWin = level * 10;
-            movesLeft = Math.Max(30 - level, 3);
+            _move = new MoveValidator(board: _board);
+            _rules = new GameRules(board: _board, validator: _move);
+
+            SettingsHelper.ApplySettings(this, $"Level {currentLevel}");
 
             CreateUI();
             GenerateLevel();
@@ -85,157 +68,13 @@ namespace SwipeArena
         }
 
         /// <summary>
-        /// Określenie wielkości planszy na podstawie poziomu
-        /// </summary>
-        /// <param name="levelNumber"></param>
-        void RandomBoardSize(int levelNumber)
-        {
-            Random random = new Random();
-
-            if (levelNumber >= 6)
-            {
-                rows = random.Next(4, 8);
-                cols = random.Next(4, 8);
-            }
-            else
-            {
-                rows = random.Next(3, 3 + levelNumber);
-                cols = random.Next(3, 3 + levelNumber);
-            }
-
-        }
-
-        void Pic_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                Pic_Click(sender, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Zmiana stylu obramowania na hover
-        /// </summary>
-        void Pic_MouseEnter(object sender, EventArgs e)
-        {
-            PictureBox pic = sender as PictureBox;
-            if (pic != null)
-            {
-                pic.BorderStyle = BorderStyle.Fixed3D;
-                pic.BackColor = Color.FromArgb(128, Color.Cyan);
-            }
-        }
-
-        /// <summary>
-        /// Przywrócenie stylu obramowania po opuszczeniu kursora
-        /// </summary>
-        void Pic_MouseLeave(object sender, EventArgs e)
-        {
-            PictureBox pic = sender as PictureBox;
-            if (pic != null)
-            {
-                pic.BorderStyle = BorderStyle.None;
-                pic.BackColor = Color.Transparent;
-            }
-        }
-
-        /// <summary>
-        /// Obsługa przeciągania elementów
-        /// </summary>
-        void Pic_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                dragged = sender as PictureBox;
-                mouseDownPos = e.Location;
-                isDragging = false;
-            }
-        }
-
-        void Pic_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left && dragged != null)
-            {
-                int dx = Math.Abs(e.X - mouseDownPos.X);
-                int dy = Math.Abs(e.Y - mouseDownPos.Y);
-
-                if ((dx >= 5 || dy >= 5) && !isDragging)
-                {
-                    isDragging = true;
-                    dragged.BackColor = Color.White;
-                    dragged.DoDragDrop(dragged, DragDropEffects.Move);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Obsługa podnoszenia elementu
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Pic_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
-
-        /// <summary>
-        /// Zamiana elementów w siatce
-        /// </summary>
-        /// <param name="pos1"></param>
-        /// <param name="pos2"></param>
-        /// <param name="box1"></param>
-        /// <param name="box2"></param>
-        void HandleSwap(Point pos1, Point pos2, PictureBox box1, PictureBox box2)
-        {
-            if (!AreAdjacent(pos1, pos2)) return;
-
-            // Animacja zamiany
-            AnimationSwap(pos1, pos2, box1, box2, onComplete: () =>
-            {
-                // Zamiana elementów w _gridzie
-                Swap(pos1, pos2);
-
-                if (FindMatches().Count > 0)
-                {
-                    // Jeśli ruch tworzy match, przetwarzaj dopasowania
-                    ProcessMatches(decrementMoves: true);
-                }
-                else
-                {
-                    // Jeśli ruch nie tworzy matcha, cofnij zamianę z animacją
-                    AnimationSwap(pos2, pos1, box1, box2, onComplete: () =>
-                    {
-                        Swap(pos1, pos2);
-                    });
-                }
-            });
-        }
-
-        /// <summary>
-        /// Obsługa upuszczania elementów
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Pic_DragDrop(object sender, DragEventArgs e)
-        {
-            if (dragged == null || dragged.Tag is not Point draggedPos || sender is not PictureBox target || target.Tag is not Point targetPos)
-                return;
-
-            HandleSwap(draggedPos, targetPos, dragged, target);
-
-            // Resetowanie stanu przeciągania
-            dragged = null;
-            isDragging = false;
-        }
-
-        /// <summary>
         /// Tworzenie interfejsu (liczniki, przycisku) 
         /// </summary>
         void CreateUI()
         {
             movesLabel = UIHelper.CreateLabel(
                 title: "MovesLabel",
-                text: $"Ruchy do końca: {movesLeft}",
+                text: $"Ruchy do końca: {_rules.GetMovesLeft()}",
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
                 foreColor: Color.White,
@@ -245,7 +84,7 @@ namespace SwipeArena
 
             pointsLabel = UIHelper.CreateLabel(
                 title: "PointsLabel",
-                text: $"Punkty: {pointsCollected}/{pointsToWin}",
+                text: $"Punkty: {_rules.GetPointsCollected()}/{_rules.GetPointsToWin()}",
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
                 foreColor: Color.White,
@@ -275,7 +114,7 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            settingsButton.Click += (s, e) => 
+            settingsButton.Click += (s, e) =>
             {
                 var settingsForm = new SettingsForm();
                 NavigateToForm(this, settingsForm);
@@ -289,9 +128,175 @@ namespace SwipeArena
 
         }
 
+        /// <summary>
+        /// Zmiana stylu obramowania na hover
+        /// </summary>
+        public void Pic_MouseEnter(object sender, EventArgs e)
+        {
+            PictureBox pic = sender as PictureBox;
+            if (pic != null)
+            {
+                pic.BorderStyle = BorderStyle.Fixed3D;
+                pic.BackColor = Color.FromArgb(128, Color.Cyan);
+            }
+        }
+
+        /// <summary>
+        /// Przywrócenie stylu obramowania po opuszczeniu kursora
+        /// </summary>
+        public void Pic_MouseLeave(object sender, EventArgs e)
+        {
+            PictureBox pic = sender as PictureBox;
+            if (pic != null)
+            {
+                pic.BorderStyle = BorderStyle.None;
+                pic.BackColor = Color.Transparent;
+            }
+        }
+
+        /// <summary>
+        /// Obsługa przeciągania elementów
+        /// </summary>
+        public void Pic_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                dragged = sender as PictureBox;
+                mouseDownPos = e.Location;
+                isDragging = false;
+            }
+        }
+
+        public void Pic_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && dragged != null)
+            {
+                int dx = Math.Abs(e.X - mouseDownPos.X);
+                int dy = Math.Abs(e.Y - mouseDownPos.Y);
+
+                if ((dx >= 5 || dy >= 5) && !isDragging)
+                {
+                    isDragging = true;
+                    dragged.BackColor = Color.White;
+                    dragged.DoDragDrop(dragged, DragDropEffects.Move);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Obsługa podnoszenia elementu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Pic_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        /// <summary>
+        /// Zamiana elementów w siatce
+        /// </summary>
+        /// <param name="pos1"></param>
+        /// <param name="pos2"></param>
+        /// <param name="box1"></param>
+        /// <param name="box2"></param>
+        void HandleSwap(Point pos1, Point pos2, PictureBox box1, PictureBox box2)
+        {
+            // Jeśli trwa animacja, nie wykonujemy ruchu
+            if (isAnimating) return;
+
+            // Sprawdzenie, czy pola sąsiadują
+            if (!_move.AreAdjacent(pos1, pos2)) return;
+
+            isAnimating = true;
+
+            var context = new AnimationContext
+            {
+                Pos1 = pos1,
+                Pos2 = pos2,
+                Box1 = box1,
+                Box2 = box2
+            };
+
+            _swapAnimation.Animation(context, () =>
+            {
+                // Zamiana elementów w logice gry
+                _move.Swap(pos1, pos2);
+
+                // Zamiana tagów PictureBox
+                SwapTags(box1, box2); 
+
+                // Aktualizacja obrazków na planszy
+                RefreshBoardUI();
+
+                // Sprawdzenie, czy ruch tworzy match
+                if (_move.FindMatches().Count > 0)
+                {
+                    // Jeśli ruch tworzy match, przetwarzamy dopasowania
+                    ProcessMatches(decrementMoves: true);
+                    isAnimating = false;
+                }
+                else
+                {
+                    // Jeśli ruch nie tworzy matcha, cofamy zamianę z animacją
+                    var reverseContext = new AnimationContext
+                    {
+                        Pos1 = pos2,
+                        Pos2 = pos1,
+                        Box1 = box1,
+                        Box2 = box2
+                    };
+
+                    _swapAnimation.Animation(reverseContext, () =>
+                    {
+                        _move.Swap(pos1, pos2); 
+
+                        // Cofnięcie tagów PictureBox
+                        SwapTags(box1, box2);
+
+                        RefreshBoardUI(); 
+
+                        isAnimating = false;
+                    });
+                }
+            });
+        }
+
+
+        void SwapTags(PictureBox box1, PictureBox box2)
+        {
+            var temp = box1.Tag;
+            box1.Tag = box2.Tag;
+            box2.Tag = temp;
+        }
+
+        void RefreshBoardUI()
+        {
+            foreach (PictureBox pic in Controls.OfType<PictureBox>())
+                if (pic.Tag is Point pos)
+                    pic.Image = _board.GetElement(pos.X, pos.Y)?.Icon;
+        }
+
+        /// <summary>
+        /// Obsługa upuszczania elementów
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Pic_DragDrop(object sender, DragEventArgs e)
+        {
+            if (dragged == null || dragged.Tag is not Point draggedPos || sender is not PictureBox target || target.Tag is not Point targetPos)
+                return;
+
+            HandleSwap(draggedPos, targetPos, dragged, target);
+
+            // Resetowanie stanu przeciągania
+            dragged = null;
+            isDragging = false;
+        }
+
         void HintButton_Click(object sender, EventArgs e)
         {
-            var bestMove = _ai.SuggestBestMove(_grid);
+            var bestMove = _ai.SuggestBestMove(_board.GetGrid());
             if (bestMove.startX != -1)
             {
                 HighlightHint(bestMove);
@@ -337,99 +342,30 @@ namespace SwipeArena
                 new GameElement("Sword", Image.FromFile("images/level/sword.png"), Point.Empty),
             };
 
-            _grid = new IGameElement[rows, cols];
+            _board.GenerateLevel(_elementTypes);
+
             Controls.OfType<PictureBox>().ToList().ForEach(p => { Controls.Remove(p); p.Dispose(); });
 
-            Random random = new();
-            for (int y = 0; y < rows; y++)
-                for (int x = 0; x < cols; x++)
-                    AddElement(random.Next(_elementTypes.Count), x, y);
+            for (int y = 0; y < _board.GetRows(); y++)
+            {
+                for (int x = 0; x < _board.GetCols(); x++)
+                {
+                    var element = _board.GetElement(x, y);
+                    var pic = CreatePictureBoxForElement(element, x, y);
+                    Controls.Add(pic);
+                }
+            }
 
-            if (!HasValidMove()) ShuffleBoard();
+
+            if (!_move.HasValidMove())
+            {
+                _board.ShuffleBoard(findMatchesFunc: _move.FindMatches, hasValidMoveFunc: _move.HasValidMove);
+
+                // odśwież GUI
+                RefreshBoardUI();
+            }
+
             ProcessMatches();
-        }
-
-        /// <summary>
-        /// Tasowanie planszy
-        /// </summary>
-        void ShuffleBoard()
-        {
-            Random random = new Random();
-            List<IGameElement> elements = new List<IGameElement>();
-
-            for (int y = 0; y < rows; y++)
-            {
-                for (int x = 0; x < cols; x++)
-                {
-                    elements.Add(_grid[y, x]);
-                }
-            }
-
-            int maxAttempts = 1000;
-            int attempts = 0;
-
-            do
-            {
-                elements = elements.OrderBy(e => random.Next()).ToList();
-
-                int index = 0;
-                for (int y = 0; y < rows; y++)
-                {
-                    for (int x = 0; x < cols; x++)
-                    {
-                        _grid[y, x] = elements[index++];
-                    }
-                }
-
-                attempts++;
-
-            } while ((!HasValidMove() || FindMatches().Count > 0) && attempts < maxAttempts);
-
-            foreach (Control control in Controls)
-            {
-                if (control is PictureBox pic && pic.Tag is Point position)
-                {
-                    int x = position.X;
-                    int y = position.Y;
-                    pic.Image = _grid[y, x].Icon;
-                }
-            }
-
-            CenterElements();
-        }
-
-
-        /// <summary>
-        /// Dodawanie pojedynczego elementu do planszy i interfejsu
-        /// </summary>
-        /// <param name="typeIndex"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        void AddElement(int typeIndex, int x, int y)
-        {
-            var element = _elementTypes[typeIndex];
-            _grid[y, x] = element;
-
-            var pic = new PictureBox
-            {
-                Image = element.Icon,
-                Size = new Size(xSize, ySize),
-                Tag = new Point(x, y),
-                SizeMode = PictureBoxSizeMode.StretchImage,
-                BackColor = Color.Transparent,
-                Region = new Region(CreateRoundedRectanglePath(new Rectangle(0, 0, xSize, ySize), 16))
-            };
-
-            pic.MouseDown += Pic_MouseDown;
-            pic.MouseMove += Pic_MouseMove;
-            pic.MouseEnter += (s, e) => { pic.BorderStyle = BorderStyle.Fixed3D; pic.BackColor = Color.FromArgb(128, Color.Cyan); };
-            pic.MouseLeave += (s, e) => { pic.BorderStyle = BorderStyle.None; pic.BackColor = Color.Transparent; };
-            pic.Click += Pic_Click;
-            pic.AllowDrop = true;
-            pic.DragEnter += (s, e) => e.Effect = DragDropEffects.Move;
-            pic.DragDrop += Pic_DragDrop;
-
-            Controls.Add(pic);
         }
 
         /// <summary>
@@ -437,9 +373,12 @@ namespace SwipeArena
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Pic_Click(object sender, EventArgs e)
+        public void Pic_Click(object sender, EventArgs e)
         {
             if (sender is not PictureBox clicked || clicked.Tag is not Point pos2) return;
+
+            if (isAnimating) return;
+
 
             if (firstClicked == null)
             {
@@ -458,55 +397,6 @@ namespace SwipeArena
             ResetClick();
         }
 
-
-        /// <summary>
-        /// Sprawdzenie czy przesunięcie elementu o jedno pole skutkuje matchem
-        /// </summary>
-        /// <returns></returns>
-        bool HasValidMove()
-        {
-            for (int y = 0; y < rows; y++)
-            {
-                for (int x = 0; x < cols; x++)
-                {
-                    // Sprawdzenie ruchu w prawo
-                    if (x < cols - 1 && CanFormMatch(x, y, x + 1, y))
-                        return true;
-
-                    // Sprawdzenie ruchu w dół
-                    if (y < rows - 1 && CanFormMatch(x, y, x, y + 1))
-                        return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Czy jest połączenie na planszy
-        /// </summary>
-        /// <param name="x1"></param>
-        /// <param name="y1"></param>
-        /// <param name="x2"></param>
-        /// <param name="y2"></param>
-        /// <returns></returns>
-        bool CanFormMatch(int x1, int y1, int x2, int y2)
-        {
-            // Zamiana elementów
-            IGameElement temp = _grid[y1, x1];
-            _grid[y1, x1] = _grid[y2, x2];
-            _grid[y2, x2] = temp;
-
-            // Sprawdzenie, czy powstało połączenie
-            bool hasMatch = FindMatches().Count > 0;
-
-            // Przywrócenie oryginalnego stanu
-            _grid[y2, x2] = _grid[y1, x1];
-            _grid[y1, x1] = temp;
-
-            return hasMatch;
-        }
-
-
         /// <summary>
         /// Resetuje zaznaczenie kliknięcia
         /// </summary>
@@ -517,44 +407,11 @@ namespace SwipeArena
         }
 
         /// <summary>
-        ///  Czy pola sąsiadują ze sobą
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        bool AreAdjacent(Point a, Point b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) == 1;
-
-        /// <summary>
-        /// Zamienia elementy w siatce
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        void Swap(Point a, Point b)
-        {
-            (_grid[a.Y, a.X], _grid[b.Y, b.X]) = (_grid[b.Y, b.X], _grid[a.Y, a.X]);
-        }
-
-
-        /// <summary>
-        /// Zamienia obrazki PictureBoxów
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        void SwapImages(PictureBox a, PictureBox b)
-        {
-            // Zamiana obrazów między dwoma PictureBox
-            var tempImage = a.Image;
-            a.Image = b.Image;
-            b.Image = tempImage;
-        }
-
-
-        /// <summary>
         /// Wyśrodkowuje elementy na planszy
         /// </summary>
         void CenterElements()
         {
-            int _gridW = cols * xSize, _gridH = rows * ySize;
+            int _gridW = _board.Cols * _elementSize, _gridH = _board.GetRows() * _elementSize;
             int startX = (ClientSize.Width - _gridW) / 2;
 
             // Rzutujemy Controls na IEnumerable<Control>
@@ -564,29 +421,11 @@ namespace SwipeArena
                 .DefaultIfEmpty()
                 .Max(c => c?.Bottom ?? 0);
 
-            int startY = topUIBottom + 40; // Przesunięcie planszy poniżej UI
+            int startY = topUIBottom + 40;
 
             foreach (PictureBox pic in Controls.OfType<PictureBox>())
                 if (pic.Tag is Point pos)
-                    pic.Location = new Point(startX + pos.X * xSize, startY + pos.Y * ySize);
-        }
-
-        /// <summary>
-        /// Tworzy ścieżkę zaokrąglonego prostokąta
-        /// </summary>
-        /// <param name="rect"></param>
-        /// <param name="radius"></param>
-        /// <returns></returns>
-        GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
-        {
-            var path = new GraphicsPath();
-            int d = radius * 2;
-            path.AddArc(rect.X, rect.Y, d, d, 180, 90);
-            path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
-            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
-            path.CloseFigure();
-            return path;
+                    pic.Location = new Point(startX + pos.X * _elementSize, startY + pos.Y * _elementSize);
         }
 
         /// <summary>
@@ -595,17 +434,18 @@ namespace SwipeArena
         void ProcessMatches(bool decrementMoves = false)
         {
             bool lastMoveCreatedMatch = false;
+            int safetyCounter = 0;
 
             do
             {
-                List<Point> matches = FindMatches();
+                List<Point> matches = _move.FindMatches();
 
                 if (matches.Count > 0)
                 {
                     lastMoveCreatedMatch = true;
 
-                    pointsCollected += matches.Count;
-                    pointsLabel.Text = $"Punkty: {pointsCollected}/{pointsToWin}";
+                    _rules.AddPoints(matches.Count);
+                    pointsLabel.Text = $"Punkty: {_rules.GetPointsCollected()}/{_rules.GetPointsToWin()}";
 
                     if (CheckGameOver())
                     {
@@ -614,324 +454,164 @@ namespace SwipeArena
 
                 }
 
-                if (!HasValidMove())
+                if (!_move.HasValidMove())
                 {
-                    ShuffleBoard();
+                    _board.ShuffleBoard(findMatchesFunc: _move.FindMatches, hasValidMoveFunc: _move.HasValidMove);
+
+                    // odśwież GUI
+                    RefreshBoardUI();
                 }
+
                 else break;
 
-            } while (true);
+                safetyCounter++;
+
+            } while (safetyCounter < 10);
 
             if (decrementMoves && lastMoveCreatedMatch)
             {
-                movesLeft--;
-                movesLabel.Text = $"Ruchy do końca: {movesLeft}";
+                _rules.DecrementMoves();
+                movesLabel.Text = $"Ruchy do końca: {_rules.GetMovesLeft()}";
             }
 
-            if (!HasValidMove())
+            if (!_move.HasValidMove())
             {
-                ShuffleBoard();
+                _board.ShuffleBoard(findMatchesFunc: _move.FindMatches, hasValidMoveFunc: _move.HasValidMove);
+
+                // odśwież GUI
+               RefreshBoardUI();
             }
 
-
-            SaveData();
+            _rules.SaveData();
 
         }
 
         /// <summary>
-        /// Zapis wyników punktowych
-        /// </summary>
-        void SaveData()
-        {
-            SaveLoad save = new SaveLoad();
-
-            save.Load();
-
-            save.BestWinStreak = Math.Max(save.BestWinStreak, save.CurrentWinStreak);
-            save.MaxPoints = Math.Max(save.MaxPoints, pointsCollected);
-            save.LastLevelPlayed = currentLevel;
-            save.TotalPoints += pointsCollected;
-
-            save.Save();
-        }
-
-        /// <summary>
-        /// Zapis po wygranej lub przegranej
-        /// </summary>
-        void SaveAfterWin()
-        {
-            SaveLoad save = new SaveLoad();
-
-            save.Load();
-
-            if (movesLeft >= 0 && pointsCollected >= pointsToWin)
-            {
-                save.CurrentWinStreak++;
-
-                if (currentLevel > save.LevelCompleted)
-                {
-                    save.LevelCompleted = currentLevel;
-                }
-
-            }
-            else if (movesLeft <= 0 && pointsCollected <= pointsToWin)
-            {
-                save.CurrentWinStreak = 0;
-            }
-
-            save.BestWinStreak = Math.Max(save.BestWinStreak, save.CurrentWinStreak);
-
-            if (_gameStopwatch != null)
-            {
-                save.TimeGame += _gameStopwatch.Elapsed.TotalSeconds;
-                _gameStopwatch.Reset();
-            }
-
-            save.Save();
-        }
-
-
-        /// <summary>
-        /// Sprawdzenie zwycięstwa
+        /// Sprawdzenie końca gry
         /// </summary>
         bool CheckGameOver()
         {
-            // Zwycięstwo w poziomie
-            if (movesLeft >= 0 && pointsCollected >= pointsToWin)
+            int result = _rules.CheckGameOver();
+            if (result == 1)
             {
-                SaveAfterWin();
-
-                // Przejście do formularza LevelComplete
                 var levelComplete = new LevelCompleteForm();
                 NavigateToForm(this, levelComplete);
 
-                return false;
+                return false; 
             }
-
-            // Przegranie w poziomie 
-            else if (movesLeft <= 0 && pointsCollected <= pointsToWin)
+            else if (result == 2)
             {
-                SaveAfterWin();
-
-                // Przejście do formularza GameOver 
                 var gameOver = new GameOverForm();
                 NavigateToForm(this, gameOver);
 
-                return false;
+                return false; 
             }
 
-            return true;
-        }
-
-        /// <summary>
-        /// Sprawdzanie czy istnieją połączenia
-        /// </summary>
-        /// <returns></returns>
-        List<Point> FindMatches()
-        {
-            HashSet<Point> matches = new HashSet<Point>();
-
-            // Sprawdzanie poziomych połączeń
-            for (int y = 0; y < rows; y++)
-            {
-                for (int x = 0; x < cols - 2; x++)
-                {
-                    string name1 = _grid[y, x].Name;
-                    string name2 = _grid[y, x + 1].Name;
-                    string name3 = _grid[y, x + 2].Name;
-
-                    if (name1 == name2 && name2 == name3)
-                    {
-                        matches.Add(new Point(x, y));
-                        matches.Add(new Point(x + 1, y));
-                        matches.Add(new Point(x + 2, y));
-                    }
-                }
-            }
-
-            // Sprawdzanie pionowych połączeń
-            for (int x = 0; x < cols; x++)
-            {
-                for (int y = 0; y < rows - 2; y++)
-                {
-                    string name1 = _grid[y, x].Name;
-                    string name2 = _grid[y + 1, x].Name;
-                    string name3 = _grid[y + 2, x].Name;
-
-                    if (name1 == name2 && name2 == name3)
-                    {
-                        matches.Add(new Point(x, y));
-                        matches.Add(new Point(x, y + 1));
-                        matches.Add(new Point(x, y + 2));
-                    }
-                }
-            }
-
-            return matches.ToList();
-        }
-
-        /// <summary>
-        /// Animacja przesunięcia elementów
-        /// </summary>
-        /// <param name="pos1"></param>
-        /// <param name="pos2"></param>
-        /// <param name="box1"></param>
-        /// <param name="box2"></param>
-        /// <param name="onComplete"></param>
-        void AnimationSwap(Point pos1, Point pos2, PictureBox box1, PictureBox box2, Action onComplete = null)
-        {
-            var originalLocation1 = box1.Location;
-            var originalLocation2 = box2.Location;
-
-            var animationTimer = new System.Windows.Forms.Timer { Interval = 2 };
-            int step = 0;
-            int totalSteps = 4;
-
-            animationTimer.Tick += (s, e) =>
-            {
-                step++;
-                box1.Location = new Point(
-                    originalLocation1.X + (originalLocation2.X - originalLocation1.X) * step / totalSteps,
-                    originalLocation1.Y + (originalLocation2.Y - originalLocation1.Y) * step / totalSteps
-                );
-                box2.Location = new Point(
-                    originalLocation2.X + (originalLocation1.X - originalLocation2.X) * step / totalSteps,
-                    originalLocation2.Y + (originalLocation1.Y - originalLocation2.Y) * step / totalSteps
-                );
-
-                if (step >= totalSteps)
-                {
-                    animationTimer.Stop();
-                    animationTimer.Dispose();
-
-                    // Przywrócenie oryginalnych lokalizacji
-                    box1.Location = originalLocation1;
-                    box2.Location = originalLocation2;
-
-                    // Zamiana obrazów w PictureBox
-                    SwapImages(box1, box2);
-
-                    // Wywołanie akcji po zakończeniu animacji
-                    onComplete?.Invoke();
-                }
-            };
-
-            animationTimer.Start();
-        }
-
-
-        /// <summary>
-        /// Animacja po połączeniu 3 elementów (usuwanie elementów) 
-        /// </summary>
-        /// <param name="matches"></param>
-        /// <param name="onAnimationComplete"></param>
-        void AnimateMatches(List<Point> matches, Action onAnimationComplete)
-        {
-            // Przykład animacji: miganie elementów
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            int blinkCount = 0;
-
-            timer.Interval = 150;
-            timer.Tick += (s, e) =>
-            {
-                foreach (Point match in matches)
-                {
-                    PictureBox pic = Controls.OfType<PictureBox>()
-                        .FirstOrDefault(p => p.Tag is Point position && position == match);
-                    if (pic != null)
-                    {
-                        pic.Visible = !pic.Visible;
-                    }
-                }
-
-                blinkCount++;
-                if (blinkCount >= 6)
-                {
-                    timer.Stop();
-                    foreach (Point match in matches)
-                    {
-                        PictureBox pic = Controls.OfType<PictureBox>()
-                            .FirstOrDefault(p => p.Tag is Point position && position == match);
-                        if (pic != null)
-                        {
-                            pic.Visible = true;
-                        }
-                    }
-
-                    onAnimationComplete?.Invoke();
-                }
-            };
-
-            timer.Start();
+            return true; 
         }
 
         /// <summary>
         /// Usuwanie połączonych elementów
         /// </summary>
         /// <param name="matches"></param>
+        bool isAnimating = false;
+
         void RemoveMatches(List<Point> matches)
         {
-            AnimateMatches(matches, () =>
+            if (matches.Count == 0) return;
+
+            isAnimating = true;
+
+            var context = new AnimationContext
             {
-                Random random = new Random();
+                ParentControl = this,
+                Matches = matches
+            };
 
-                foreach (Point match in matches)
-                {
-                    int x = match.X;
-                    int y = match.Y;
-
-                    // Usuwanie elementu z siatki
-                    _grid[y, x] = null;
-
-                    foreach (Control control in Controls)
-                    {
-                        if (control is PictureBox pic && pic.Tag is Point position && position.X == x && position.Y == y)
-                        {
-                            Controls.Remove(pic);
-                            pic.Dispose();
-                            break;
-                        }
-                    }
-                }
-
-                // Zastępowanie usuniętych elementów nowymi
-                for (int y = 0; y < rows; y++)
-                {
-                    for (int x = 0; x < cols; x++)
-                    {
-                        if (_grid[y, x] == null)
-                        {
-                            IGameElement newElement = _elementTypes[random.Next(_elementTypes.Count)];
-                            _grid[y, x] = newElement;
-
-                            PictureBox pic = new PictureBox
-                            {
-                                Image = newElement.Icon,
-                                Size = new Size(xSize, ySize),
-                                Location = new Point((ClientSize.Width - cols * xSize) / 2 + x * xSize, (ClientSize.Height - rows * ySize) / 2 + y * ySize),
-                                SizeMode = PictureBoxSizeMode.StretchImage,
-                                Tag = new Point(x, y),
-                                BackColor = Color.Transparent,
-                            };
-
-                            pic.MouseDown += Pic_MouseDown;
-                            pic.AllowDrop = true;
-                            pic.DragEnter += Pic_DragEnter;
-                            pic.DragDrop += Pic_DragDrop;
-
-                            pic.MouseEnter += Pic_MouseEnter;
-                            pic.MouseLeave += Pic_MouseLeave;
-                            pic.MouseMove += Pic_MouseMove;
-                            pic.Click += Pic_Click;
-
-                            Controls.Add(pic);
-                        }
-                    }
-                }
+            _matchAnimation.Animation(context, () =>
+            {
+                RemoveMatchedElements(matches);
+                ReplaceRemovedElements();
                 CenterElements();
+                isAnimating = false;
 
-                ProcessMatches();
+                // dopiero teraz sprawdzamy kolejne dopasowania
+                List<Point> newMatches = _move.FindMatches();
+                if (newMatches.Count > 0)
+                    RemoveMatches(newMatches);  
             });
+        }
+
+        /// <summary>
+        /// / Usuwa wskazane elementy z planszy logicznie (Board) oraz graficznie (PictureBoxy).
+        /// </summary>
+        void RemoveMatchedElements(List<Point> matches)
+        {
+            foreach (Point match in matches)
+            {
+                int x = match.X;
+                int y = match.Y;
+
+                // Usuń element z logiki gry
+                _board.SetElement(x, y, null);
+
+                // Usuń odpowiadający PictureBox
+                var pic = Controls.OfType<PictureBox>()
+                                  .FirstOrDefault(p => p.Tag is Point pos && pos.X == x && pos.Y == y);
+
+                if (pic != null)
+                {
+                    Controls.Remove(pic);
+                    pic.Dispose();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Tworzy nowe losowe elementy dla pustych miejsc na planszy i dodaje odpowiadające PictureBoxy do interfejsu.
+        /// </summary>
+        void ReplaceRemovedElements()
+        {
+            Random random = new Random();
+
+            for (int y = 0; y < _board.GetRows(); y++)
+            {
+                for (int x = 0; x < _board.GetCols(); x++)
+                {
+                    if (_board.GetElement(x, y) == null)
+                    {
+                        IGameElement newElement = _elementTypes[random.Next(_elementTypes.Count)].Clone();
+                        _board.SetElement(x, y, newElement); ;
+
+                        var pic = CreatePictureBoxForElement(newElement, x, y);
+                        pic.Tag = new Point(x, y);
+                        pic.Region = new Region(UIHelper.CreateRoundedRectanglePath(
+                                     new Rectangle(0, 0, _elementSize, _elementSize), 16));
+                        Controls.Add(pic);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///  Tworzy nowy PictureBox dla podanego elementu gry, ustawia jego pozycję, rozmiar, obrazek, tag i eventy.
+        /// </summary>
+        PictureBox CreatePictureBoxForElement(IGameElement element, int x, int y)
+        {
+            return new PictureBox
+            {
+                Image = element.Icon,
+                Size = new Size(_elementSize, _elementSize),
+                Location = new Point(
+                    (ClientSize.Width - _board.GetCols() * _elementSize) / 2 + x * _elementSize,
+                    (ClientSize.Height - _board.GetRows() * _elementSize) / 2 + y * _elementSize
+                ),
+                SizeMode = PictureBoxSizeMode.StretchImage,
+                Tag = new Point(x, y),
+                BackColor = Color.Transparent,
+                AllowDrop = true
+            }.WithEventHandlers(this);
         }
     }
 }

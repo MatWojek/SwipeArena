@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,38 +22,114 @@ namespace SwipeArena.Helpers
         /// <summary>
         /// Liczba zwycięstw z rzędu w bieżącej sesji gry.
         /// </summary>
-        public int CurrentWinStreak { get; set; } = 0;
+        int CurrentWinStreak { get; set; } = 0;
 
         /// <summary>
         /// Najlepsza seria zwycięstw osiągnięta w historii gry.
         /// </summary>
-        public int BestWinStreak { get; set; } = 0;
+        int BestWinStreak { get; set; } = 0;
 
         /// <summary>
         /// Numer ostatniego poziomu, który został rozpoczęty.
         /// </summary>
-        public int LastLevelPlayed { get; set; } = 0;
+        int LastLevelPlayed { get; set; } = 0;
 
         /// <summary>
         /// Liczba ukończonych poziomów.
         /// </summary>
-        public int LevelCompleted { get; set; } = 0;
+        int LevelCompleted { get; set; } = 0;
 
         /// <summary>
         /// Najwyższa liczba punktów zdobyta w jednej sesji gry.
         /// </summary>
-        public int MaxPoints { get; set; } = 0;
+        int MaxPoints { get; set; } = 0;
 
         /// <summary>
         /// Całkowita liczba punktów zdobyta przez gracza w całej grze.
         /// </summary>
-        public int TotalPoints { get; set; } = 0;
+        int TotalPoints { get; set; } = 0;
 
         /// <summary>
         /// Łączny czas gry w sekundach.
         /// </summary>
-        public double TimeGame { get; set; } = 0.0;
+        double TimeGame { get; set; } = 0.0;
 
+        public void SetCurrentWinStreak(bool checkWin)
+        {
+            if (checkWin)
+            {
+                CurrentWinStreak += 1;
+            }
+            else
+            {
+                CurrentWinStreak = 0;
+            }
+        }
+
+        public int GetCurrentWinStreak() 
+        { 
+            return CurrentWinStreak; 
+        }
+
+        public void SetBestWinStreak(int bestWinStreak)
+        {
+            BestWinStreak = bestWinStreak;
+        }
+
+        public int GetBestWinStreak()
+        {
+            return BestWinStreak;
+        }
+
+        public void SetLastLevelPlayed(int lastLevelPlayed)
+        {
+            LastLevelPlayed = lastLevelPlayed;
+        }
+
+        public int GetLastLevelPlayed()
+        {
+            return LastLevelPlayed;
+        }
+
+        public void SetLevelCompleted(int levelCompleted)
+        {
+            LevelCompleted = levelCompleted;
+        }
+
+        public int GetLevelCompleted()
+        {
+            return LevelCompleted;
+        }
+
+        public void SetMaxPoints(int maxPoints)
+        {
+            MaxPoints = maxPoints;
+        }
+
+        public int GetMaxPoints()
+        {
+            return MaxPoints;
+        }
+
+        public void SetTotalPoints(int totalPoints)
+        {
+            TotalPoints += totalPoints;
+        }
+
+        public int GetTotalPoints()
+        {
+            return TotalPoints;
+        }
+
+        public void SetTimeGame(double timeGame)
+        {
+            TimeGame += timeGame;
+        }
+
+        public double GetTimeGame()
+        {
+            return TimeGame;
+        }
 
         /// <summary>
         /// Zapisuje postępy do pliku JSON.

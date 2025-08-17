@@ -14,15 +14,6 @@ using SwipeArena.Helpers;
 using SwipeArena.UI;
 using SwipeArena.Config;
 
-// TODO: 
-// Przed wyjściem wyskoczy MessageBox z pytaniem czy zapisać zmiany 
-// Będzie można kliknąć ikonę głośnika wtedy dźwięki zostaną wyciszone 
-// Będzie również pasek do ustawienia głośności 
-// Będzie zmiana rozdzielczości przez którą użytkownik będzie mógł zmienić rozmiar okna i automatycznie będzie się wszystko ustawiać
-// W pliku settings, będą wszystkie ustawienia związane z rozmiarem okna, z ustawieniami głośności, będą one również zapisywane do pliku
-// Zapis gry i ustawień w jsonie
-// Zapisz powoduje przejście do ostatniego otwartego okna
-
 namespace SwipeArena
 {
     public partial class SettingsForm : BaseForm

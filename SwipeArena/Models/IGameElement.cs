@@ -9,13 +9,14 @@ namespace SwipeArena.Models
     /// <summary>
     ///  Interfejs do tworzenia elementów w grze
     /// </summary>
-    internal interface IGameElement
+    public interface IGameElement
     {
-        public string Name { get; set; }
-        public Image Icon { get; set; }
-        public Point Position { get; set; }
+        string Name { get; set; }
+        Image Icon { get; set; }
+        Point Position { get; set; }
 
-        public void Draw(Graphics graphics);
+        void Draw(Graphics graphics);
 
+        IGameElement Clone(); 
     }
 }
