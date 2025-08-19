@@ -6,15 +6,18 @@ using SwipeArena.UI;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno wybierania poziomu
+    /// </summary>
     public partial class SelectLevelForm : BaseForm
     {
 
-        Button settingsButton, levelButton;
+        Button _settingsButton, _levelButton;
 
         int _levels = BasicSettings.Levels;
         const int MARGIN = 100;
 
-        Random random = new Random();
+        Random _random = new Random();
 
         List<Button> _levelButtons = new List<Button>();
 
@@ -45,7 +48,7 @@ namespace SwipeArena
             // Ustawienia formularza
             SettingsHelper.ApplySettings(this, "Wybierz poziom");
 
-            settingsButton = UIHelper.CreateButton(
+            _settingsButton = UIHelper.CreateButton(
                 title: "Settings",
                 text: "Ustawienia",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -56,12 +59,12 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            settingsButton.Click += (s, e) =>
+            _settingsButton.Click += (s, e) =>
             {
                 var settingsForm = new SettingsForm();
                 NavigateToForm(this, settingsForm);
             };
-            panel1.Controls.Add(settingsButton);
+            panel1.Controls.Add(_settingsButton);
 
             Create_levelButtons();
 
@@ -91,9 +94,9 @@ namespace SwipeArena
                     int buttonHeight = 100;
 
                     // Losowa pozycja przycisków w granicach okna
-                    int randomX = random.Next(0, Math.Max(1, panel1.Width - buttonWidth));
+                    int randomX = _random.Next(0, Math.Max(1, panel1.Width - buttonWidth));
 
-                    levelButton = UIHelper.CreateButton(
+                    _levelButton = UIHelper.CreateButton(
                         title: "LevelButton",
                         text: "Poziom " + i,
                         backColor: Color.FromArgb(169, 169, 169),
@@ -107,29 +110,29 @@ namespace SwipeArena
 
                     if (save.GetLevelCompleted() + 1 == i)
                     {
-                        levelButton.BackColor = Color.FromArgb(66, 197, 230);
+                        _levelButton.BackColor = Color.FromArgb(66, 197, 230);
                     }
 
                     else
                     {
-                        levelButton.BackColor = Color.FromArgb(169, 169, 169);
+                        _levelButton.BackColor = Color.FromArgb(169, 169, 169);
                     }
 
                     // Ustawienie okrągłego kształtu przycisku
                     GraphicsPath path = new GraphicsPath();
-                    path.AddEllipse(0, 0, levelButton.Width, levelButton.Height);
-                    levelButton.Region = new Region(path);
+                    path.AddEllipse(0, 0, _levelButton.Width, _levelButton.Height);
+                    _levelButton.Region = new Region(path);
 
                     // Styl przycisku
-                    levelButton.FlatAppearance.BorderSize = 0;
+                    _levelButton.FlatAppearance.BorderSize = 0;
 
                     // Przypisanie zdarzenia kliknięcia
-                    levelButton.Tag = i;
-                    levelButton.Click += LevelButton_Click;
+                    _levelButton.Tag = i;
+                    _levelButton.Click += LevelButton_Click;
 
                     // Dodanie przycisku do panelu
-                    panel1.Controls.Add(levelButton);
-                    _levelButtons.Add(levelButton);
+                    panel1.Controls.Add(_levelButton);
+                    _levelButtons.Add(_levelButton);
                 }
             }
         }
@@ -168,8 +171,8 @@ namespace SwipeArena
 
 
                 // Losowe przesunięcie w granicach 10 pikseli
-                int randomOffsetX = random.Next(-50, 50); 
-                int randomOffsetY = random.Next(-50, 50);
+                int randomOffsetX = _random.Next(-50, 50); 
+                int randomOffsetY = _random.Next(-50, 50);
 
                 // Przeliczenie pozycji
                 int x = (panel1.Width - buttonSize) / 2 + randomOffsetX;

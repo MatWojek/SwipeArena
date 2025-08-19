@@ -6,6 +6,9 @@ using System.Windows.Forms;
 
 namespace SwipeArena.Animations
 {
+    /// <summary>
+    /// Klasa tworząca animację po dopasowaniu
+    /// </summary>
     public class MatchAnimation : IAnimation
     {
         /// <summary>

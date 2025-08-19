@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Helpers
 {
+    /// <summary>
+    /// Klasa do obsługi zamykania okna gry lub wychodzenia z gry (zamykanie wszystkich okien)
+    /// </summary>
     public class FormUtils
     {
-        static bool isExiting = false;
+        static bool _isExiting = false;
 
         /// <summary>
         /// Rejestruje zdarzenie FormClosing, aby zamknąć całą aplikację.
@@ -18,7 +21,7 @@ namespace SwipeArena.Helpers
         {
             form.FormClosing += (sender, e) =>
             {
-                if (!isExiting)
+                if (!_isExiting)
                 {
                     Application.Exit();
                 }
@@ -30,7 +33,7 @@ namespace SwipeArena.Helpers
         /// </summary>
         public static void ExitApplication()
         {
-            isExiting = true;
+            _isExiting = true;
             Application.Exit();
         }
     }

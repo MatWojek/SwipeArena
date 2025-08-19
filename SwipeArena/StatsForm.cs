@@ -14,15 +14,18 @@ using SwipeArena.UI;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno Statystyk
+    /// </summary>
     public partial class StatsForm : BaseForm
     {
-        Panel panelSettings;
+        Panel _panelSettings;
 
-        Button exitButton;
+        Button _exitButton;
 
-        Label infoLabel;
+        Label _infoLabel;
 
-        SaveLoad saveLoad = new SaveLoad();
+        SaveLoad _saveLoad = new SaveLoad();
 
         public StatsForm()
         {
@@ -35,27 +38,27 @@ namespace SwipeArena
                 SettingsHelper.ApplySettings(this, "Ustawienia");
 
                 // Tworzenie panelu ustawień 
-                panelSettings = UIHelper.CreatePanel(
+                _panelSettings = UIHelper.CreatePanel(
                     "PanelSettings",
                     new Size(ClientSize.Width - 100, ClientSize.Height - 50),
                     new Point(20, 20),
                     Color.FromArgb(240, 240, 240)
                 );
-                Controls.Add(panelSettings);
+                Controls.Add(_panelSettings);
 
-                saveLoad.Load();
+                _saveLoad.Load();
 
                 // Wyświetlenie statystyk 
-                infoLabel = UIHelper.CreateLabel(
+                _infoLabel = UIHelper.CreateLabel(
                 title: "GameInfoLabel",
                 text: $"🎮 Swipe Arena Statystyki\n\n" +
-                       $"Ostatnia ilość wygranych pod rząd: {saveLoad.GetCurrentWinStreak()}\n" +
-                       $"Najlepsza ilość wygranych pod rząd: {saveLoad.GetBestWinStreak()}\n" +
-                       $"Ostatni grany poziom: {saveLoad.GetLastLevelPlayed()}\n" +
-                       $"Ilość ukończonych poziomów: {saveLoad.GetLevelCompleted()}\n" +
-                       $"Najwyższy wynik zdobyty w pojedynczej grze: {saveLoad.GetMaxPoints()}\n" +
-                       $"Łącznie zdobyte punkty: {saveLoad.GetTotalPoints()}\n" +
-                       $"Łączny czas gry: {saveLoad.GetTimeGame()}\n\n",
+                       $"Ostatnia ilość wygranych pod rząd: {_saveLoad.GetCurrentWinStreak()}\n" +
+                       $"Najlepsza ilość wygranych pod rząd: {_saveLoad.GetBestWinStreak()}\n" +
+                       $"Ostatni grany poziom: {_saveLoad.GetLastLevelPlayed()}\n" +
+                       $"Ilość ukończonych poziomów: {_saveLoad.GetLevelCompleted()}\n" +
+                       $"Najwyższy wynik zdobyty w pojedynczej grze: {_saveLoad.GetMaxPoints()}\n" +
+                       $"Łącznie zdobyte punkty: {_saveLoad.GetTotalPoints()}\n" +
+                       $"Łączny czas gry: {Math.Round(_saveLoad.GetTimeGame())} min\n\n",
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
                 foreColor: Color.Black,
@@ -63,10 +66,10 @@ namespace SwipeArena
                 location: new Point(ClientSize.Width - 100, ClientSize.Height / 2),
                 fontStyle: FontStyle.Bold
                 );
-                panelSettings.Controls.Add(infoLabel);
+                _panelSettings.Controls.Add(_infoLabel);
 
                 // Przycisk Wyjście
-                exitButton = UIHelper.CreateButton(
+                _exitButton = UIHelper.CreateButton(
                     title: "ExitButton",
                     text: "Wróć do Ustawień",
                     backColor: Color.FromArgb(255, 102, 102),
@@ -77,10 +80,10 @@ namespace SwipeArena
                     fontSize: BasicSettings.FontSize,
                     fontStyle: FontStyle.Bold
                     );
-                exitButton.Click += (s, e) => NavigateBack();
-                panelSettings.Controls.Add(exitButton);
+                _exitButton.Click += (s, e) => NavigateBack();
+                _panelSettings.Controls.Add(_exitButton);
 
-                var allControls = panelSettings.Controls.Cast<Control>().ToList();
+                var allControls = _panelSettings.Controls.Cast<Control>().ToList();
 
                 if (ClientSize.Width < 1336)
                 {

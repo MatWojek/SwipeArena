@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Helpers
 {
+    /// <summary>
+    /// Zapisywanie i wczytywanie ustawień aplikacji (rozdzielczości, głośności, funkcji AI itp.) 
+    /// </summary>
     public class SettingsData
     {
         static SettingsData? _instance;

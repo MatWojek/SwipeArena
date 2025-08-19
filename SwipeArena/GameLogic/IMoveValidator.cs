@@ -6,7 +6,16 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.GameLogic
 {
-    internal interface IMoveValidator
+    /// <summary>
+    /// Interfejs do poprawnego działania ruchów w grze
+    /// </summary>
+    public interface IMoveValidator
     {
+        bool HasValidMove();
+        bool AreAdjacent(Point a, Point b);
+        List<Point> FindMatches();
+        void Swap(Point a, Point b);
+        void SwapTags(PictureBox box1, PictureBox box2);
+       
     }
 }

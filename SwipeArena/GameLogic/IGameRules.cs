@@ -6,7 +6,17 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.GameLogic
 {
-    internal interface IGameRules
+    /// <summary>
+    /// Interfejs zapisujący wyniki gry (podczas gry)
+    /// </summary>
+    public interface IGameRules
     {
+        void AddPoints(int points);
+        int GetPointsCollected();
+        int GetPointsToWin();
+        void SetMovesLeft(int movesLeft);
+        void DecrementMoves();
+        int GetMovesLeft();
+        int CheckGameOver();  
     }
 }

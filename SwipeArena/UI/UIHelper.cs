@@ -4,6 +4,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace SwipeArena.UI
 {
+    /// <summary>
+    /// Klasa do tworzenia elementów interfejsu
+    /// </summary>
     public static class UIHelper
     {
 
@@ -70,7 +73,6 @@ namespace SwipeArena.UI
 
         }
 
-
         /// <summary>
         /// Tworzenie Label
         /// </summary>
@@ -136,6 +138,76 @@ namespace SwipeArena.UI
         }
 
         /// <summary>
+        /// Tworzenie CheckBox
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="text"></param>
+        /// <param name="backColor"></param>
+        /// <param name="foreColor"></param>
+        /// <param name="size"></param>
+        /// <param name="location"></param>
+        /// <param name="isChecked"></param>
+        /// <param name="fontFamily"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="fontStyle"></param>
+        /// <returns></returns>
+        public static CheckBox CreateCheckBox(
+            string title,
+            string text,
+            Color backColor,
+            Color foreColor,
+            Size size,
+            Point location,
+            bool isChecked,
+            string font,
+            float fontSize,
+            FontStyle fontStyle = FontStyle.Regular
+        )
+        {
+            return new CheckBox
+            {
+                Name = title,
+                Text = text,
+                BackColor = backColor,
+                ForeColor = foreColor,
+                Size = size,
+                Location = location,
+                Checked = isChecked,
+                Font = new System.Drawing.Font(font, fontSize, fontStyle)
+            };
+        }
+
+        /// <summary>
+        /// Tworzenie ComboBox
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="dropDownStyle"></param>
+        /// <param name="backColor"></param>
+        /// <param name="foreColor"></param>
+        /// <param name="size"></param>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        public static ComboBox CreateComboBox(
+           string title,
+           ComboBoxStyle dropDownStyle,
+           Color backColor,
+           Color foreColor,
+           Size size,
+           Point location
+        )
+        {
+            return new ComboBox
+            {
+                Name = title,
+                DropDownStyle = dropDownStyle,
+                BackColor = backColor,
+                ForeColor = foreColor,
+                Size = size,
+                Location = location
+            };
+        }
+
+        /// <summary>
         /// Tworzy ścieżkę zaokrąglonego prostokąta
         /// </summary>
         /// <param name="rect"></param>
@@ -152,20 +224,5 @@ namespace SwipeArena.UI
             path.CloseFigure();
             return path;
         }
-
-        //public static ComboBox CreateComboBox()
-        //{
-        //    ComboBox box = new ComboBox(); 
-        //}
-
-        //public static TrackBar CreateTrackBar()
-        //{
-        //    ComboBox box = new ComboBox(); 
-        //}
-
-        //public static PictureBox CreatePictureBox()
-        //{
-        //    PictureBox pic = new PictureBox();
-        //}
     }
 }

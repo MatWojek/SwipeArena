@@ -6,14 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-// Zapis będzie polegał na tym że będzie pokazywał serię zwycięstw 
-// Obecną i najlepszą 
-// Oraz który level był robiony jako ostatni
-
 namespace SwipeArena.Helpers
 {
     /// <summary>
-    /// Zapisywanie i wczytywanie gry
+    /// Klasa do zapisywania i wczytywania danych gry (zwycięstwa, seria, najlepszy wynik, itp.)
     /// </summary>
     internal class SaveLoad : ISaveLoad
     {
@@ -54,6 +50,10 @@ namespace SwipeArena.Helpers
         /// </summary>
         double TimeGame { get; set; } = 0.0;
 
+        /// <summary>
+        /// Ustawianie obecnej serii zwycięstw
+        /// </summary>
+        /// <param name="checkWin"></param>
         public void SetCurrentWinStreak(bool checkWin)
         {
             if (checkWin)
@@ -66,66 +66,118 @@ namespace SwipeArena.Helpers
             }
         }
 
+        /// <summary>
+        /// Pobieranie obecnej serii zwycięstw
+        /// </summary>
+        /// <returns></returns>
         public int GetCurrentWinStreak() 
         { 
             return CurrentWinStreak; 
         }
 
+        /// <summary>
+        /// Ustawianie najlepszej serii zwycięstw
+        /// </summary>
+        /// <param name="bestWinStreak"></param>
         public void SetBestWinStreak(int bestWinStreak)
         {
             BestWinStreak = bestWinStreak;
         }
 
+        /// <summary>
+        /// Pobieranie najlepszej serii zwycięstw
+        /// </summary>
+        /// <returns></returns>
         public int GetBestWinStreak()
         {
             return BestWinStreak;
         }
 
+        /// <summary>
+        /// Ustawianie ostatniego granego poziomu
+        /// </summary>
+        /// <param name="lastLevelPlayed"></param>
         public void SetLastLevelPlayed(int lastLevelPlayed)
         {
             LastLevelPlayed = lastLevelPlayed;
         }
 
+        /// <summary>
+        /// Pobieranie ostatniego granego poziomu
+        /// </summary>
+        /// <returns></returns>
         public int GetLastLevelPlayed()
         {
             return LastLevelPlayed;
         }
 
+        /// <summary>
+        /// Ustawianie najdalszego wygranego poziomu
+        /// </summary>
+        /// <param name="levelCompleted"></param>
         public void SetLevelCompleted(int levelCompleted)
         {
             LevelCompleted = levelCompleted;
         }
 
+        /// <summary>
+        /// Pobieranie najdalszego wygranego poziomu
+        /// </summary>
+        /// <returns></returns>
         public int GetLevelCompleted()
         {
             return LevelCompleted;
         }
 
+        /// <summary>
+        /// Ustawianie maksymalnej zdobytej ilości punktów 
+        /// </summary>
+        /// <param name="maxPoints"></param>
         public void SetMaxPoints(int maxPoints)
         {
             MaxPoints = maxPoints;
         }
 
+        /// <summary>
+        /// Pobieranie maksymalnej zdobytej ilości punktów
+        /// </summary>
+        /// <returns></returns>
         public int GetMaxPoints()
         {
             return MaxPoints;
         }
 
+        /// <summary>
+        /// Ustawianie całkowitej zdobytej ilości punktów
+        /// </summary>
+        /// <param name="totalPoints"></param>
         public void SetTotalPoints(int totalPoints)
         {
             TotalPoints += totalPoints;
         }
 
+        /// <summary>
+        /// Pobieranie całkowitej zdobytej ilości punktów
+        /// </summary>
+        /// <returns></returns>
         public int GetTotalPoints()
         {
             return TotalPoints;
         }
 
+        /// <summary>
+        /// Ustawianie całkowitego czasu w grze
+        /// </summary>
+        /// <param name="timeGame"></param>
         public void SetTimeGame(double timeGame)
         {
             TimeGame += timeGame;
         }
 
+        /// <summary>
+        /// Pobieranie całkowitego czasu w grze
+        /// </summary>
+        /// <returns></returns>
         public double GetTimeGame()
         {
             return TimeGame;
@@ -136,20 +188,22 @@ namespace SwipeArena.Helpers
         /// </summary>
         public void Save()
         {
-            var saveData = new
+            var saveData = new SaveData
             {
-                CurrentWinStreak,
-                BestWinStreak,
-                LevelCompleted,
-                LastLevelPlayed,
-                MaxPoints,
-                TotalPoints,
-                TimeGame
+                CurrentWinStreak = CurrentWinStreak,
+                BestWinStreak = BestWinStreak,
+                LevelCompleted = LevelCompleted,
+                LastLevelPlayed = LastLevelPlayed,
+                MaxPoints = MaxPoints,
+                TotalPoints = TotalPoints,
+                TimeGame = TimeGame
             };
 
             var json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+            Directory.CreateDirectory(Path.GetDirectoryName(SaveFilePath)!);
             File.WriteAllText(SaveFilePath, json);
         }
+
 
         /// <summary>
         /// Wczytuje postępy z pliku JSON.
@@ -158,16 +212,28 @@ namespace SwipeArena.Helpers
         {
             if (File.Exists(SaveFilePath))
             {
-                var json = File.ReadAllText(SaveFilePath);
-                var saveData = JsonConvert.DeserializeObject<dynamic>(json);
+                try
+                {
+                    var json = File.ReadAllText(SaveFilePath);
+                    var saveData = JsonConvert.DeserializeObject<SaveData>(json);
 
-                CurrentWinStreak = saveData.CurrentWinStreak;
-                BestWinStreak = saveData.BestWinStreak;
-                LastLevelPlayed = saveData.LastLevelPlayed;
-                LevelCompleted = saveData.LevelCompleted;
-                MaxPoints = saveData.MaxPoints;
-                TotalPoints = saveData.TotalPoints;
-                TimeGame = saveData.TimeGame;
+                    if (saveData != null)
+                    {
+                        CurrentWinStreak = saveData.CurrentWinStreak;
+                        BestWinStreak = saveData.BestWinStreak;
+                        LastLevelPlayed = saveData.LastLevelPlayed;
+                        LevelCompleted = saveData.LevelCompleted;
+                        MaxPoints = saveData.MaxPoints;
+                        TotalPoints = saveData.TotalPoints;
+                        TimeGame = saveData.TimeGame;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Jeśli plik jest uszkodzony → reset zamiast crasha
+                    Reset();
+                    Console.WriteLine($"Błąd przy wczytywaniu zapisu: {ex.Message}");
+                }
             }
         }
 
@@ -206,7 +272,7 @@ namespace SwipeArena.Helpers
                     try
                     {
                         var json = File.ReadAllText(openFileDialog.FileName);
-                        var saveData = JsonConvert.DeserializeObject<dynamic>(json);
+                        var saveData = JsonConvert.DeserializeObject<SaveData>(json);
 
                         // Aktualizacja właściwości na podstawie wczytanych danych
                         CurrentWinStreak = saveData.CurrentWinStreak;

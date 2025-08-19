@@ -6,6 +6,9 @@ using System.Threading;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno Menu 
+    /// </summary>
     public partial class MenuForm : BaseForm
     { 
 

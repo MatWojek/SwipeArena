@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Animations
 {
+    /// <summary>
+    /// Kontekst animacji używany w grze do przechowywania danych potrzebnych do różnych typów animacji
+    /// </summary>
     public class AnimationContext
     {
 

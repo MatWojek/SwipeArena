@@ -15,10 +15,13 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Podstawowe ustawienia okna
+    /// </summary>
     public partial class BaseForm : Form
     {
 
-        protected static Stack<Form> formHistory = new Stack<Form>();
+        protected static Stack<Form> _formHistory = new Stack<Form>();
         
         public BaseForm()
         {
@@ -75,9 +78,9 @@ namespace SwipeArena
             {
                 if (nextForm == new MenuForm())
                 {
-                    formHistory.Clear();
+                    _formHistory.Clear();
                 }
-                formHistory.Push(thisForm);
+                _formHistory.Push(thisForm);
                 loadingForm.Show();
                 loadingForm.Refresh();
                 Thread.Sleep(60); // Symulacja ładowania
@@ -92,9 +95,9 @@ namespace SwipeArena
         /// </summary>
         protected void NavigateBack()
         {
-            if (formHistory.Count > 0)
+            if (_formHistory.Count > 0)
             {
-                var previousForm = formHistory.Pop(); // Pobranie poprzedniego okna z historii
+                var previousForm = _formHistory.Pop(); // Pobranie poprzedniego okna z historii
                 previousForm.Show();
                 Hide(); // Zamknięcie obecnego okna}
             }
@@ -112,9 +115,9 @@ namespace SwipeArena
         {
             base.OnFormClosing(e);
 
-            if (formHistory.Count > 0)
+            if (_formHistory.Count > 0)
             {
-                formHistory.Clear(); // Czyszczenie historii przy zamknięciu aplikacji
+                _formHistory.Clear(); // Czyszczenie historii przy zamknięciu aplikacji
             }
         } 
 

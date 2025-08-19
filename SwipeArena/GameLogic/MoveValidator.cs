@@ -8,11 +8,14 @@ using SwipeArena.Animations;
 
 namespace SwipeArena.GameLogic
 {
-    public class MoveValidator
+    /// <summary>
+    /// Klasa do poprawnego działania ruchów w grze
+    /// </summary>
+    public class MoveValidator : IMoveValidator
     {
-        readonly GameBoard _board;
+        readonly IGameBoard _board;
 
-        public MoveValidator(GameBoard board)
+        public MoveValidator(IGameBoard board)
         {
             _board = board;
         }
@@ -35,7 +38,6 @@ namespace SwipeArena.GameLogic
             }
             return false;
         }
-
 
         /// <summary>
         /// Czy jest połączenie na planszy
@@ -66,7 +68,6 @@ namespace SwipeArena.GameLogic
             return hasMatch;
         }
 
-
         /// <summary>
         ///  Czy pola sąsiadują ze sobą
         /// </summary>
@@ -76,6 +77,10 @@ namespace SwipeArena.GameLogic
         public bool AreAdjacent(Point a, Point b) 
             => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) == 1;
 
+        /// <summary>
+        /// Znajdowanie dopasowań
+        /// </summary>
+        /// <returns></returns>
         public List<Point> FindMatches()
         {
             HashSet<Point> matches = new HashSet<Point>();
@@ -121,8 +126,6 @@ namespace SwipeArena.GameLogic
             return matches.ToList();
         }
 
-
-
         /// <summary>
         /// Zamienia elementy w siatce
         /// </summary>
@@ -138,6 +141,18 @@ namespace SwipeArena.GameLogic
             var temp = _board.GetElement(a.X, a.Y);
             _board.SetElement(a.X, a.Y, _board.GetElement(b.X, b.Y));
             _board.SetElement(b.X, b.Y, temp);
+        }
+
+        /// <summary>
+        /// Przypisanie tagów do zdjęć
+        /// </summary>
+        /// <param name="box1"></param>
+        /// <param name="box2"></param>
+        public void SwapTags(PictureBox box1, PictureBox box2)
+        {
+            var temp = box1.Tag;
+            box1.Tag = box2.Tag;
+            box2.Tag = temp;
         }
     }
 }

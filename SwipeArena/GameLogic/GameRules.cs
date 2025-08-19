@@ -10,10 +10,13 @@ using System.Data;
 
 namespace SwipeArena.GameLogic
 {
-    public class GameRules
+    /// <summary>
+    /// Klasa do zapisu wyników grze (podczas gry)
+    /// </summary>
+    public class GameRules : IGameRules
     {
-        readonly GameBoard _board;
-        readonly MoveValidator _validator;
+        readonly IGameBoard _board;
+        readonly IMoveValidator _validator;
 
         int _currentLevel;
 
@@ -21,9 +24,9 @@ namespace SwipeArena.GameLogic
         int MovesLeft { get; set; }
         int PointsToWin { get; set; }
 
-    Stopwatch _gameStopwatch;
+        Stopwatch _gameStopwatch;
 
-        public GameRules(GameBoard board, MoveValidator validator)
+        public GameRules(IGameBoard board, IMoveValidator validator)
         {
             _board = board;
             _validator = validator;
@@ -142,7 +145,7 @@ namespace SwipeArena.GameLogic
 
             if (_gameStopwatch != null)
             {
-                save.SetTimeGame(_gameStopwatch.Elapsed.TotalSeconds);
+                save.SetTimeGame(_gameStopwatch.Elapsed.TotalMinutes);
                 _gameStopwatch.Reset();
             }
 
@@ -155,6 +158,8 @@ namespace SwipeArena.GameLogic
         /// <returns></returns>
         public int CheckGameOver()
         {
+            SaveData(); 
+
             if (PointsCollected >= PointsToWin)
             {
                 SaveAfterWin();

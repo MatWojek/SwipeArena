@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Helpers
 {
+    /// <summary>
+    /// Interfejs do zapisu postępu w grze
+    /// </summary>
     public interface ISaveLoad
     {
         void Load();

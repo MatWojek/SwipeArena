@@ -2,6 +2,9 @@
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno startowe 
+    /// </summary>
     public partial class StartWindowForm : Form
     {
         System.Windows.Forms.Timer transitionTimer;
@@ -13,7 +16,7 @@ namespace SwipeArena
 
                 Icon = new Icon("images/ico/SwipeArenaIcon.ico");
 
-                var settings = new SettingsData();
+                SettingsData _settings = SettingsData.Instance;
 
                 InitializeComponent();
 
@@ -37,7 +40,7 @@ namespace SwipeArena
                 }, TaskScheduler.FromCurrentSynchronizationContext());
                 // Ustawienia formularza
                 Text = "Ekran Startowy";
-                Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+                Size = new Size(_settings.Resolution.X, _settings.Resolution.Y);
 
                 // Zablokowanie zmiany rozmiaru okna 
                 FormBorderStyle = FormBorderStyle.FixedSingle;

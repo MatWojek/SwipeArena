@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Animations
 {
+    /// <summary>
+    /// Klasa tworząca animację po ruchu
+    /// </summary>
     internal class SwapAnimation : IAnimation
     {
         /// <summary>

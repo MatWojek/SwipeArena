@@ -14,14 +14,17 @@ using SwipeArena.UI;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno pomocy w zrozumieniu zasad gry
+    /// </summary>
     public partial class HelpForm : BaseForm
     {
 
-        Panel panelSettings;
+        Panel _panelSettings;
 
-        Button exitButton;
+        Button _exitButton;
 
-        Label infoLabel;
+        Label _infoLabel;
 
         public HelpForm()
         {
@@ -35,15 +38,15 @@ namespace SwipeArena
                 SettingsHelper.ApplySettings(this, "Ustawienia");
 
                 // Tworzenie panelu ustawień 
-                panelSettings = UIHelper.CreatePanel(
-                    "PanelSettings",
+                _panelSettings = UIHelper.CreatePanel(
+                    "_panelSettings",
                     new Size(ClientSize.Width - 100, ClientSize.Height - 50),
                     new Point(20, 20),
                     Color.FromArgb(240, 240, 240)
                 );
-                Controls.Add(panelSettings);
-                infoLabel = UIHelper.CreateLabel(
-                    title: "GameInfoLabel",
+                Controls.Add(_panelSettings);
+                _infoLabel = UIHelper.CreateLabel(
+                    title: "Game_infoLabel",
                     text: "🎮 Swipe Arena\n\n" +
                           "Swipe Arena to logiczno-przygodowa gra polegająca na przeciąganiu elementów na planszy w celu wykonywania dopasowań," +
                           "zdobywania punktów oraz pokonywania przeciwników.\n\n" +
@@ -60,11 +63,11 @@ namespace SwipeArena
                     location: new Point(ClientSize.Width - 100, ClientSize.Height / 2),
                     fontStyle: FontStyle.Bold
                 );
-                panelSettings.Controls.Add(infoLabel);
+                _panelSettings.Controls.Add(_infoLabel);
 
                 // Przycisk Wyjście
-                exitButton = UIHelper.CreateButton(
-                    title: "ExitButton",
+                _exitButton = UIHelper.CreateButton(
+                    title: "_exitButton",
                     text: "Wróć do Ustawień",
                     backColor: Color.FromArgb(255, 102, 102),
                     foreColor: Color.White,
@@ -74,10 +77,10 @@ namespace SwipeArena
                     fontSize: BasicSettings.FontSize,
                     fontStyle: FontStyle.Bold
                     );
-                exitButton.Click += (s, e) => NavigateBack();
-                panelSettings.Controls.Add(exitButton);
+                _exitButton.Click += (s, e) => NavigateBack();
+                _panelSettings.Controls.Add(_exitButton);
 
-                var allControls = panelSettings.Controls.Cast<Control>().ToList();
+                var allControls = _panelSettings.Controls.Cast<Control>().ToList();
 
                 if (ClientSize.Width < 1336)
                 {

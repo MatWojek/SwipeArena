@@ -13,27 +13,35 @@ using SwipeArena.Animations;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno gry
+    /// </summary>
     public partial class LevelForm : BaseForm
     {
+        public static int currentLevel;
+
         Stopwatch _gameStopwatch = new Stopwatch();
 
-        AIHelper _ai = new AIHelper();
         List<IGameElement> _elementTypes = new();
-        PictureBox firstClicked = null, dragged = null;
+        PictureBox _firstClicked = null, _dragged = null;
 
         int _elementSize;
 
-        Label movesLabel, pointsLabel;
-        Button settingsButton, hintButton;
+        Label _movesLabel, _pointsLabel;
+        Button _settingsButton, _hintButton;
 
-        bool isDragging = false;
-        Point mouseDownPos;
+        Point _mouseDownPos;
 
-        public static int currentLevel;
+        bool _isAnimating = false;
+        bool _isDragging = false;
+        bool IsPlayerInputEnabled => !_settingsData.IsAIEnabled;
 
-        static GameBoard _board = new GameBoard();
-        static MoveValidator _move;
-        static GameRules _rules;
+        SettingsData _settingsData = SettingsData.Instance;
+
+        AIHelper _ai = new AIHelper();
+        static IGameBoard _board = new GameBoard();
+        static IMoveValidator _move;
+        static IGameRules _rules;
 
         IAnimation _matchAnimation = new MatchAnimation();
         IAnimation _swapAnimation = new SwapAnimation();
@@ -42,13 +50,6 @@ namespace SwipeArena
         {
             InitializeComponent();
             LoadBackgroundImage("images/background/background.png");
-
-            // Obsługa AI dla poziomu
-            //if (settings.IsAIEnabled)
-            //{
-            //    var aiHelper = new AIHelper();
-            //    aiHelper.PlayAutomatically(board, () => settings.IsAIEnabled);
-            //}
 
             currentLevel = level;
 
@@ -64,7 +65,16 @@ namespace SwipeArena
             GenerateLevel();
 
             CenterElements();
+
+
+            // Obsługa AI dla poziomu
+            if (!IsPlayerInputEnabled)
+            {
+                _ = RunAIAsync();
+            }
+
             Resize += (s, e) => CenterElements();
+
         }
 
         /// <summary>
@@ -72,7 +82,7 @@ namespace SwipeArena
         /// </summary>
         void CreateUI()
         {
-            movesLabel = UIHelper.CreateLabel(
+            _movesLabel = UIHelper.CreateLabel(
                 title: "MovesLabel",
                 text: $"Ruchy do końca: {_rules.GetMovesLeft()}",
                 font: BasicSettings.FontFamily,
@@ -82,7 +92,7 @@ namespace SwipeArena
                 fontStyle: FontStyle.Bold
                 );
 
-            pointsLabel = UIHelper.CreateLabel(
+            _pointsLabel = UIHelper.CreateLabel(
                 title: "PointsLabel",
                 text: $"Punkty: {_rules.GetPointsCollected()}/{_rules.GetPointsToWin()}",
                 font: BasicSettings.FontFamily,
@@ -92,7 +102,7 @@ namespace SwipeArena
                 fontStyle: FontStyle.Bold
                 );
 
-            hintButton = UIHelper.CreateButton(
+            _hintButton = UIHelper.CreateButton(
                 title: "HintButton",
                 text: "Podpowiedź",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -102,9 +112,9 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            hintButton.Click += HintButton_Click;
+            _hintButton.Click += HintButton_Click;
 
-            settingsButton = UIHelper.CreateButton(
+            _settingsButton = UIHelper.CreateButton(
                 title: "Settings",
                 text: "Ustawienia",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -114,13 +124,13 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            settingsButton.Click += (s, e) =>
+            _settingsButton.Click += (s, e) =>
             {
                 var settingsForm = new SettingsForm();
                 NavigateToForm(this, settingsForm);
             };
 
-            Controls.AddRange(new Control[] { movesLabel, pointsLabel, settingsButton, hintButton, });
+            Controls.AddRange(new Control[] { _movesLabel, _pointsLabel, _settingsButton, _hintButton, });
 
             var allControls = Controls.Cast<Control>().ToList();
 
@@ -133,199 +143,14 @@ namespace SwipeArena
         /// </summary>
         public void Pic_MouseEnter(object sender, EventArgs e)
         {
+            if (!IsPlayerInputEnabled) return;
+
             PictureBox pic = sender as PictureBox;
             if (pic != null)
             {
                 pic.BorderStyle = BorderStyle.Fixed3D;
                 pic.BackColor = Color.FromArgb(128, Color.Cyan);
             }
-        }
-
-        /// <summary>
-        /// Przywrócenie stylu obramowania po opuszczeniu kursora
-        /// </summary>
-        public void Pic_MouseLeave(object sender, EventArgs e)
-        {
-            PictureBox pic = sender as PictureBox;
-            if (pic != null)
-            {
-                pic.BorderStyle = BorderStyle.None;
-                pic.BackColor = Color.Transparent;
-            }
-        }
-
-        /// <summary>
-        /// Obsługa przeciągania elementów
-        /// </summary>
-        public void Pic_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                dragged = sender as PictureBox;
-                mouseDownPos = e.Location;
-                isDragging = false;
-            }
-        }
-
-        public void Pic_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left && dragged != null)
-            {
-                int dx = Math.Abs(e.X - mouseDownPos.X);
-                int dy = Math.Abs(e.Y - mouseDownPos.Y);
-
-                if ((dx >= 5 || dy >= 5) && !isDragging)
-                {
-                    isDragging = true;
-                    dragged.BackColor = Color.White;
-                    dragged.DoDragDrop(dragged, DragDropEffects.Move);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Obsługa podnoszenia elementu
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Pic_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
-
-        /// <summary>
-        /// Zamiana elementów w siatce
-        /// </summary>
-        /// <param name="pos1"></param>
-        /// <param name="pos2"></param>
-        /// <param name="box1"></param>
-        /// <param name="box2"></param>
-        void HandleSwap(Point pos1, Point pos2, PictureBox box1, PictureBox box2)
-        {
-            // Jeśli trwa animacja, nie wykonujemy ruchu
-            if (isAnimating) return;
-
-            // Sprawdzenie, czy pola sąsiadują
-            if (!_move.AreAdjacent(pos1, pos2)) return;
-
-            isAnimating = true;
-
-            var context = new AnimationContext
-            {
-                Pos1 = pos1,
-                Pos2 = pos2,
-                Box1 = box1,
-                Box2 = box2
-            };
-
-            _swapAnimation.Animation(context, () =>
-            {
-                // Zamiana elementów w logice gry
-                _move.Swap(pos1, pos2);
-
-                // Zamiana tagów PictureBox
-                SwapTags(box1, box2); 
-
-                // Aktualizacja obrazków na planszy
-                RefreshBoardUI();
-
-                // Sprawdzenie, czy ruch tworzy match
-                if (_move.FindMatches().Count > 0)
-                {
-                    // Jeśli ruch tworzy match, przetwarzamy dopasowania
-                    ProcessMatches(decrementMoves: true);
-                    isAnimating = false;
-                }
-                else
-                {
-                    // Jeśli ruch nie tworzy matcha, cofamy zamianę z animacją
-                    var reverseContext = new AnimationContext
-                    {
-                        Pos1 = pos2,
-                        Pos2 = pos1,
-                        Box1 = box1,
-                        Box2 = box2
-                    };
-
-                    _swapAnimation.Animation(reverseContext, () =>
-                    {
-                        _move.Swap(pos1, pos2); 
-
-                        // Cofnięcie tagów PictureBox
-                        SwapTags(box1, box2);
-
-                        RefreshBoardUI(); 
-
-                        isAnimating = false;
-                    });
-                }
-            });
-        }
-
-
-        void SwapTags(PictureBox box1, PictureBox box2)
-        {
-            var temp = box1.Tag;
-            box1.Tag = box2.Tag;
-            box2.Tag = temp;
-        }
-
-        void RefreshBoardUI()
-        {
-            foreach (PictureBox pic in Controls.OfType<PictureBox>())
-                if (pic.Tag is Point pos)
-                    pic.Image = _board.GetElement(pos.X, pos.Y)?.Icon;
-        }
-
-        /// <summary>
-        /// Obsługa upuszczania elementów
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Pic_DragDrop(object sender, DragEventArgs e)
-        {
-            if (dragged == null || dragged.Tag is not Point draggedPos || sender is not PictureBox target || target.Tag is not Point targetPos)
-                return;
-
-            HandleSwap(draggedPos, targetPos, dragged, target);
-
-            // Resetowanie stanu przeciągania
-            dragged = null;
-            isDragging = false;
-        }
-
-        void HintButton_Click(object sender, EventArgs e)
-        {
-            var bestMove = _ai.SuggestBestMove(_board.GetGrid());
-            if (bestMove.startX != -1)
-            {
-                HighlightHint(bestMove);
-            }
-        }
-
-        void HighlightHint((int startX, int startY, int endX, int endY) move)
-        {
-            foreach (PictureBox pic in Controls.OfType<PictureBox>())
-            {
-                if (pic.Tag is Point pos &&
-                    (pos == new Point(move.startX, move.startY) || pos == new Point(move.endX, move.endY)))
-                {
-                    pic.BackColor = Color.Yellow;
-                }
-            }
-
-            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-            timer.Interval = 1000;
-            timer.Tick += (s, e) =>
-            {
-                foreach (PictureBox pic in Controls.OfType<PictureBox>())
-                {
-                    if (pic.BackColor == Color.Yellow)
-                        pic.BackColor = Color.Transparent;
-                }
-                timer.Stop();
-            };
-            timer.Start();
         }
 
         /// <summary>
@@ -369,44 +194,6 @@ namespace SwipeArena
         }
 
         /// <summary>
-        /// Obsługa kliknięcia (pierwszy/drugi klik)
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Pic_Click(object sender, EventArgs e)
-        {
-            if (sender is not PictureBox clicked || clicked.Tag is not Point pos2) return;
-
-            if (isAnimating) return;
-
-
-            if (firstClicked == null)
-            {
-                firstClicked = clicked;
-                firstClicked.BackColor = Color.FromArgb(128, Color.Cyan);
-                return;
-            }
-
-            if (firstClicked.Tag is not Point pos1)
-            {
-                ResetClick();
-                return;
-            }
-
-            HandleSwap(pos1, pos2, firstClicked, clicked);
-            ResetClick();
-        }
-
-        /// <summary>
-        /// Resetuje zaznaczenie kliknięcia
-        /// </summary>
-        void ResetClick()
-        {
-            if (firstClicked != null) firstClicked.BackColor = Color.Transparent;
-            firstClicked = null;
-        }
-
-        /// <summary>
         /// Wyśrodkowuje elementy na planszy
         /// </summary>
         void CenterElements()
@@ -429,6 +216,325 @@ namespace SwipeArena
         }
 
         /// <summary>
+        /// Przywrócenie stylu obramowania po opuszczeniu kursora
+        /// </summary>
+        public void Pic_MouseLeave(object sender, EventArgs e)
+        {
+            if (!IsPlayerInputEnabled) return;
+
+            PictureBox pic = sender as PictureBox;
+            if (pic != null)
+            {
+                pic.BorderStyle = BorderStyle.None;
+                pic.BackColor = Color.Transparent;
+            }
+        }
+
+        /// <summary>
+        /// Obsługa przeciągania elementów
+        /// </summary>
+        public void Pic_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!IsPlayerInputEnabled) return;
+
+            if (e.Button == MouseButtons.Left)
+            {
+                _dragged = sender as PictureBox;
+                _mouseDownPos = e.Location;
+                _isDragging = false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Pic_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!IsPlayerInputEnabled) return;
+
+            if (e.Button == MouseButtons.Left && _dragged != null)
+            {
+                int dx = Math.Abs(e.X - _mouseDownPos.X);
+                int dy = Math.Abs(e.Y - _mouseDownPos.Y);
+
+                if ((dx >= 5 || dy >= 5) && !_isDragging)
+                {
+                    _isDragging = true;
+                    _dragged.BackColor = Color.White;
+                    _dragged.DoDragDrop(_dragged, DragDropEffects.Move);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Obsługa podnoszenia elementu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Pic_DragEnter(object sender, DragEventArgs e)
+        {
+            if (!IsPlayerInputEnabled) return;
+
+            e.Effect = DragDropEffects.Move;
+        }
+
+        /// <summary>
+        /// Obsługa kliknięcia (pierwszy/drugi klik)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Pic_Click(object sender, EventArgs e)
+        {
+            if (IsPlayerInputEnabled) return;
+
+            if (sender is not PictureBox clicked || clicked.Tag is not Point pos2) return;
+
+            if (_isAnimating) return;
+
+
+            if (_firstClicked == null)
+            {
+                _firstClicked = clicked;
+                _firstClicked.BackColor = Color.FromArgb(67, 203, 107);
+                return;
+            }
+
+            if (_firstClicked.Tag is not Point pos1)
+            {
+                ResetClick();
+                return;
+            }
+
+            HandleSwap(pos1, pos2, _firstClicked, clicked);
+            ResetClick();
+        }
+
+        /// <summary>
+        /// Obsługa upuszczania elementów
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Pic_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!IsPlayerInputEnabled) return;
+
+            if (_dragged == null || _dragged.Tag is not Point draggedPos || sender is not PictureBox target || target.Tag is not Point targetPos)
+                return;
+
+            HandleSwap(draggedPos, targetPos, _dragged, target);
+
+            // Resetowanie stanu przeciągania
+            _dragged = null;
+            _isDragging = false;
+        }
+
+
+        /// <summary>
+        /// Resetuje zaznaczenie kliknięcia
+        /// </summary>
+        void ResetClick()
+        {
+            if (_firstClicked != null) _firstClicked.BackColor = Color.Transparent;
+            _firstClicked = null;
+        }
+
+        /// <summary>
+        /// Zamiana elementów w siatce
+        /// </summary>
+        /// <param name="pos1"></param>
+        /// <param name="pos2"></param>
+        /// <param name="box1"></param>
+        /// <param name="box2"></param>
+        void HandleSwap(Point pos1, Point pos2, PictureBox box1, PictureBox box2)
+        {
+            // Jeśli trwa animacja, nie wykonujemy ruchu
+            if (_isAnimating) return;
+
+            // Sprawdzenie, czy pola sąsiadują
+            if (!_move.AreAdjacent(pos1, pos2)) return;
+
+            _isAnimating = true;
+
+            var context = new AnimationContext
+            {
+                Pos1 = pos1,
+                Pos2 = pos2,
+                Box1 = box1,
+                Box2 = box2
+            };
+
+            _swapAnimation.Animation(context, () =>
+            {
+                // Zamiana elementów w logice gry
+                _move.Swap(pos1, pos2);
+
+                // Zamiana tagów PictureBox
+                _move.SwapTags(box1, box2);
+
+                // Aktualizacja obrazków na planszy
+                RefreshBoardUI();
+
+                // Sprawdzenie, czy ruch tworzy match
+                if (_move.FindMatches().Count > 0)
+                {
+                    // Jeśli ruch tworzy match, przetwarzamy dopasowania
+                    ProcessMatches(decrementMoves: true);
+                    _isAnimating = false;
+                }
+                else
+                {
+                    // Jeśli ruch nie tworzy matcha, cofamy zamianę z animacją
+                    var reverseContext = new AnimationContext
+                    {
+                        Pos1 = pos2,
+                        Pos2 = pos1,
+                        Box1 = box1,
+                        Box2 = box2
+                    };
+
+                    _swapAnimation.Animation(reverseContext, () =>
+                    {
+                        _move.Swap(pos1, pos2);
+
+                        // Cofnięcie tagów PictureBox
+                        _move.SwapTags(box1, box2);
+
+                        RefreshBoardUI();
+
+                        _isAnimating = false;
+                    });
+                }
+            });
+        }
+
+        /// <summary>
+        /// Synchronizacja interfejsu i GameBoard
+        /// </summary>
+        void RefreshBoardUI()
+        {
+            foreach (PictureBox pic in Controls.OfType<PictureBox>())
+                if (pic.Tag is Point pos)
+                    pic.Image = _board.GetElement(pos.X, pos.Y)?.Icon;
+        }
+
+        /// <summary>
+        /// Automatyczne przechodzenie poziomu
+        /// </summary>
+        /// <returns></returns>
+        async Task RunAIAsync()
+        {
+            while (true)
+            {
+                if (!CheckGameOver())
+                    break; // zakończ jeśli koniec gry
+
+                await Task.Delay(500); // mała przerwa dla wizualizacji
+
+                var bestMove = _ai.SuggestBestMove(_board.GetGrid());
+
+                if (bestMove.startX == -1)
+                {
+                    _board.ShuffleBoard(_move.FindMatches, _move.HasValidMove);
+                    RefreshBoardUI();
+                    continue;
+                }
+
+                var start = new Point(bestMove.startX, bestMove.startY);
+                var end = new Point(bestMove.endX, bestMove.endY);
+
+                var box1 = GetPictureBoxAt(start.X, start.Y);
+                var box2 = GetPictureBoxAt(end.X, end.Y);
+
+                if (box1 != null && box2 != null)
+                {
+                    await InvokeAsync(() => HandleSwap(start, end, box1, box2));
+
+                    // Czekamy aż animacje swap i match się zakończą
+                    while (_isAnimating)
+                        await Task.Delay(500);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Zabezpieczenie wykonania animacji przy automatycznej grze
+        /// </summary>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public Task InvokeAsync(Action action)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            Invoke(new Action(() =>
+            {
+                try
+                {
+                    action();
+                    tcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+            }));
+            return tcs.Task;
+        }
+
+
+        /// <summary>
+        /// Pobiera PictureBox na podstawie współrzędnych.
+        /// </summary>
+        PictureBox GetPictureBoxAt(int x, int y)
+        {
+            return Controls.OfType<PictureBox>()
+                           .FirstOrDefault(p => p.Tag is Point pos && pos.X == x && pos.Y == y);
+        }
+
+        /// <summary>
+        /// Obsługa wciśnięcia przycisku pomocy
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void HintButton_Click(object sender, EventArgs e)
+        {
+            var bestMove = _ai.SuggestBestMove(_board.GetGrid());
+            if (bestMove.startX != -1)
+            {
+                HighlightHint(bestMove);
+            }
+        }
+
+        /// <summary>
+        /// Podświetlenie najlepszego ruchu
+        /// </summary>
+        /// <param name="move"></param>
+        void HighlightHint((int startX, int startY, int endX, int endY) move)
+        {
+            foreach (PictureBox pic in Controls.OfType<PictureBox>())
+            {
+                if (pic.Tag is Point pos &&
+                    (pos == new Point(move.startX, move.startY) || pos == new Point(move.endX, move.endY)))
+                {
+                    pic.BackColor = Color.Yellow;
+                }
+            }
+
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000;
+            timer.Tick += (s, e) =>
+            {
+                foreach (PictureBox pic in Controls.OfType<PictureBox>())
+                {
+                    if (pic.BackColor == Color.Yellow)
+                        pic.BackColor = Color.Transparent;
+                }
+                timer.Stop();
+            };
+            timer.Start();
+        }
+
+        /// <summary>
         /// Sprawdzanie czy istnieją połączenia
         /// </summary>
         void ProcessMatches(bool decrementMoves = false)
@@ -445,7 +551,7 @@ namespace SwipeArena
                     lastMoveCreatedMatch = true;
 
                     _rules.AddPoints(matches.Count);
-                    pointsLabel.Text = $"Punkty: {_rules.GetPointsCollected()}/{_rules.GetPointsToWin()}";
+                    _pointsLabel.Text = $"Punkty: {_rules.GetPointsCollected()}/{_rules.GetPointsToWin()}";
 
                     if (CheckGameOver())
                     {
@@ -471,7 +577,7 @@ namespace SwipeArena
             if (decrementMoves && lastMoveCreatedMatch)
             {
                 _rules.DecrementMoves();
-                movesLabel.Text = $"Ruchy do końca: {_rules.GetMovesLeft()}";
+                _movesLabel.Text = $"Ruchy do końca: {_rules.GetMovesLeft()}";
             }
 
             if (!_move.HasValidMove())
@@ -479,11 +585,9 @@ namespace SwipeArena
                 _board.ShuffleBoard(findMatchesFunc: _move.FindMatches, hasValidMoveFunc: _move.HasValidMove);
 
                 // odśwież GUI
-               RefreshBoardUI();
+                RefreshBoardUI();
             }
-
-            _rules.SaveData();
-
+            
         }
 
         /// <summary>
@@ -494,33 +598,35 @@ namespace SwipeArena
             int result = _rules.CheckGameOver();
             if (result == 1)
             {
-                var levelComplete = new LevelCompleteForm();
-                NavigateToForm(this, levelComplete);
-
-                return false; 
+                Invoke(new Action(() =>
+                {
+                    var levelComplete = new LevelCompleteForm();
+                    NavigateToForm(this, levelComplete);
+                }));
+                return false;
             }
             else if (result == 2)
             {
-                var gameOver = new GameOverForm();
-                NavigateToForm(this, gameOver);
-
-                return false; 
+                Invoke(new Action(() =>
+                {
+                    var gameOver = new GameOverForm();
+                    NavigateToForm(this, gameOver);
+                }));
+                return false;
             }
 
-            return true; 
+            return true;
         }
 
         /// <summary>
         /// Usuwanie połączonych elementów
         /// </summary>
         /// <param name="matches"></param>
-        bool isAnimating = false;
-
         void RemoveMatches(List<Point> matches)
         {
             if (matches.Count == 0) return;
 
-            isAnimating = true;
+            _isAnimating = true;
 
             var context = new AnimationContext
             {
@@ -533,14 +639,31 @@ namespace SwipeArena
                 RemoveMatchedElements(matches);
                 ReplaceRemovedElements();
                 CenterElements();
-                isAnimating = false;
 
-                // dopiero teraz sprawdzamy kolejne dopasowania
-                List<Point> newMatches = _move.FindMatches();
-                if (newMatches.Count > 0)
-                    RemoveMatches(newMatches);  
+                // Iteracyjnie przetwarzaj kolejne dopasowania
+                List<Point> newMatches;
+                do
+                {
+                    newMatches = _move.FindMatches();
+                    if (newMatches.Count > 0)
+                    {
+                        RemoveMatchedElements(newMatches);
+                        ReplaceRemovedElements();
+                        CenterElements();
+                    }
+                } while (newMatches.Count > 0);
+
+                // Sprawdź, czy są dostępne ruchy
+                if (!_move.HasValidMove())
+                {
+                    _board.ShuffleBoard(findMatchesFunc: _move.FindMatches, hasValidMoveFunc: _move.HasValidMove);
+                    RefreshBoardUI();
+                }
+
+                _isAnimating = false;
             });
         }
+
 
         /// <summary>
         /// / Usuwa wskazane elementy z planszy logicznie (Board) oraz graficznie (PictureBoxy).
@@ -566,7 +689,6 @@ namespace SwipeArena
                 }
             }
         }
-
 
         /// <summary>
         /// Tworzy nowe losowe elementy dla pustych miejsc na planszy i dodaje odpowiadające PictureBoxy do interfejsu.
@@ -595,11 +717,11 @@ namespace SwipeArena
         }
 
         /// <summary>
-        ///  Tworzy nowy PictureBox dla podanego elementu gry, ustawia jego pozycję, rozmiar, obrazek, tag i eventy.
+        /// Pobiera PictureBox na podstawie współrzędnych.
         /// </summary>
         PictureBox CreatePictureBoxForElement(IGameElement element, int x, int y)
         {
-            return new PictureBox
+            var pic = new PictureBox
             {
                 Image = element.Icon,
                 Size = new Size(_elementSize, _elementSize),
@@ -610,8 +732,13 @@ namespace SwipeArena
                 SizeMode = PictureBoxSizeMode.StretchImage,
                 Tag = new Point(x, y),
                 BackColor = Color.Transparent,
-                AllowDrop = true
-            }.WithEventHandlers(this);
+                AllowDrop = !_settingsData.IsAIEnabled
+            };
+
+            if (!_settingsData.IsAIEnabled)
+                pic.WithEventHandlers(this);
+
+            return pic;
         }
     }
 }

@@ -14,12 +14,13 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno wygranej
+    /// </summary>
     public partial class LevelCompleteForm : BaseForm
     {
 
-        Button exitLevelButton, restartLevelButton, nextLevelButton, menuButton;
-
-        Random random = new Random();
+        Button _exitLevelButton, _restartLevelButton, _nextLevelButton, _menuButton;
 
         public LevelCompleteForm()
         {
@@ -43,7 +44,7 @@ namespace SwipeArena
         void AddButtons()
         {
             // Przycisk Restart
-            restartLevelButton = UIHelper.CreateButton(
+            _restartLevelButton = UIHelper.CreateButton(
                 title: "Restart",
                 text: "Restart",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -51,34 +52,34 @@ namespace SwipeArena
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
                 );
-            restartLevelButton.Click += RestartLevelButton_Click;
-            Controls.Add(restartLevelButton);
+            _restartLevelButton.Click += RestartLevelButton_Click;
+            Controls.Add(_restartLevelButton);
 
-            menuButton = UIHelper.CreateButton( 
-                title: "MenuButton", 
+            _menuButton = UIHelper.CreateButton( 
+                title: "_menuButton", 
                 text: "Wróć do Menu",
                 backColor: Color.FromArgb(255, 102, 102),
                 foreColor: Color.White,
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
             );
-            menuButton.Click += MenuButton_Click;
-            Controls.Add(menuButton);
+            _menuButton.Click += MenuButton_Click;
+            Controls.Add(_menuButton);
 
             // Przycisk NextLevel
-            nextLevelButton = UIHelper.CreateButton(
-                title: "NextLevelButton",
+            _nextLevelButton = UIHelper.CreateButton(
+                title: "_nextLevelButton",
                 text: "Następny",
                 backColor: Color.FromArgb(66, 197, 230),
                 foreColor: Color.White,
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
                 );
-            nextLevelButton.Click += NextLevelButton_Click;
-            Controls.Add(nextLevelButton);
+            _nextLevelButton.Click += NextLevelButton_Click;
+            Controls.Add(_nextLevelButton);
 
             // Przycisk Wyjście
-            exitLevelButton = UIHelper.CreateButton(
+            _exitLevelButton = UIHelper.CreateButton(
                 title: "Exit",
                 text: "Wyjdź z Gry",
                 backColor: Color.FromArgb(255, 102, 102),
@@ -86,10 +87,10 @@ namespace SwipeArena
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
                 );
-            exitLevelButton.Click += (s, e) => Close();
-            Controls.Add(exitLevelButton);
+            _exitLevelButton.Click += (s, e) => Close();
+            Controls.Add(_exitLevelButton);
 
-            var buttons = new List<Control> {nextLevelButton, restartLevelButton, menuButton, exitLevelButton};
+            var buttons = new List<Control> {_nextLevelButton, _restartLevelButton, _menuButton, _exitLevelButton};
             AdjustButtonPositions(buttons);
 
         }

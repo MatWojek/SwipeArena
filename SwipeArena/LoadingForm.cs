@@ -12,6 +12,9 @@ namespace SwipeArena
 {
     public partial class LoadingForm : Form
     {
+        /// <summary>
+        /// Okno ładowania gry
+        /// </summary>
         public LoadingForm()
         {
             InitializeComponent();
@@ -36,7 +39,7 @@ namespace SwipeArena
 
         }
 
-        private void Loading_Load(object sender, EventArgs e)
+        void Loading_Load(object sender, EventArgs e)
         {
 
         }

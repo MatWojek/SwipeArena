@@ -13,12 +13,15 @@ using SwipeArena.UI;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno przegranej gry
+    /// </summary>
     public partial class GameOverForm : BaseForm
     {
 
-        Button exitLevelButton, restartLevelButton, menuButton;
+        Button _exitLevelButton, _restartLevelButton, _menuButton;
 
-        Random random = new Random(); 
+        Random _random = new Random(); 
 
         public GameOverForm()
         {
@@ -47,7 +50,7 @@ namespace SwipeArena
         void AddButtons()
         {
             // Przycisk Restart
-            restartLevelButton = UIHelper.CreateButton(
+            _restartLevelButton = UIHelper.CreateButton(
                 title: "Restart",
                 text: "Restart",
                 backColor: Color.FromArgb(66, 197, 230),
@@ -55,22 +58,22 @@ namespace SwipeArena
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
                 );
-            restartLevelButton.Click += RestartButton_Click;
-            Controls.Add(restartLevelButton);
+            _restartLevelButton.Click += RestartButton_Click;
+            Controls.Add(_restartLevelButton);
 
-            menuButton = UIHelper.CreateButton(
-                title: "MenuButton",
+            _menuButton = UIHelper.CreateButton(
+                title: "_menuButton",
                 text: "Wróć do Menu",
                 backColor: Color.FromArgb(255, 102, 102),
                 foreColor: Color.White,
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
             );
-            menuButton.Click += MenuButton_Click;
-            Controls.Add(menuButton);
+            _menuButton.Click += MenuButton_Click;
+            Controls.Add(_menuButton);
 
             // Przycisk Wyjście
-            exitLevelButton = UIHelper.CreateButton(
+            _exitLevelButton = UIHelper.CreateButton(
                 title: "Exit",
                 text: "Wyjdź z Gry",
                 backColor: Color.FromArgb(255, 102, 102),
@@ -78,10 +81,10 @@ namespace SwipeArena
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize
                 );
-            exitLevelButton.Click += (s, e) => Close();
-            Controls.Add(exitLevelButton);
+            _exitLevelButton.Click += (s, e) => Close();
+            Controls.Add(_exitLevelButton);
 
-            var buttons = new List<Control> { restartLevelButton, menuButton, exitLevelButton };
+            var buttons = new List<Control> { _restartLevelButton, _menuButton, _exitLevelButton };
             AdjustButtonPositions(buttons);
         }
 

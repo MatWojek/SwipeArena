@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Models
 {
+    /// <summary>
+    /// Tworzenie nowych obiektów w grze
+    /// </summary>
     public class GameElement : IGameElement
     {
         public string Name { get; set; }
@@ -18,6 +21,11 @@ namespace SwipeArena.Models
             Icon = icon;
             Position = position;
         }
+
+        /// <summary>
+        /// Tworzy kopię bieżącego obiektu GameElement
+        /// </summary>
+        /// <returns></returns>
         public IGameElement Clone()
         {
             return new GameElement(Name, Icon, Position);

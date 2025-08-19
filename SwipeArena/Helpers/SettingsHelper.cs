@@ -11,7 +11,6 @@ namespace SwipeArena.Helpers
     /// </summary>
     public static class SettingsHelper
     {
-
         static SettingsData settings = SettingsData.Instance;
 
         public static void ApplySettings(Form form, string text)

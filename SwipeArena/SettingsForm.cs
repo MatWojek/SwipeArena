@@ -16,23 +16,26 @@ using SwipeArena.Config;
 
 namespace SwipeArena
 {
+    /// <summary>
+    /// Okno ustawień gry
+    /// </summary>
     public partial class SettingsForm : BaseForm
     {
-        Button resetButton, saveButton, helpButton, exitButton, returnToMenuButton, statsButton, loadSaveButton, loadSettingsButton, returnButton;
+        Button _resetButton, _saveButton, _helpButton, _exitButton, _returnToMenuButton, _statsButton, _loadSaveButton, _loadSettingsButton, _returnButton;
 
-        TrackBar volumeMusic;
+        TrackBar _volumeMusic;
 
-        Label titleLabel, volumeLabel, aiLabel;
+        Label _titleLabel, _volumeLabel, _aiLabel;
 
-        ComboBox changeResolution;
+        ComboBox _changeResolution;
 
-        System.Windows.Forms.CheckBox aiCheckBox; 
+        System.Windows.Forms.CheckBox _aiCheckBox; 
 
-        Panel panelSettings;
+        Panel _panelSettings;
 
-        Image? volumeOnIcon, volumeOffIcon;
+        Image? _volumeOnIcon, _volumeOffIcon;
 
-        SettingsData settings = SettingsData.Instance;
+        SettingsData _settings = SettingsData.Instance;
 
         SaveLoad _saveLoad = new SaveLoad();
 
@@ -50,8 +53,8 @@ namespace SwipeArena
                 // Wczytanie ikon głośnika
                 if (File.Exists("images/icons/dark_volume_up.png") && File.Exists("images/icons/dark_volume_off.png"))
                 {
-                    volumeOnIcon = Image.FromFile("images/icons/dark_volume_up.png");
-                    volumeOffIcon = Image.FromFile("images/icons/dark_volume_off.png");
+                    _volumeOnIcon = Image.FromFile("images/icons/dark_volume_up.png");
+                    _volumeOffIcon = Image.FromFile("images/icons/dark_volume_off.png");
                 }
                 else
                 {
@@ -59,13 +62,13 @@ namespace SwipeArena
                 }
 
                 // Tworzenie panelu ustawień 
-                panelSettings = UIHelper.CreatePanel(
+                _panelSettings = UIHelper.CreatePanel(
                     "PanelSettings",
                     new Size(ClientSize.Width - 100, ClientSize.Height - 50),
                     new Point(20, 20),
                     Color.FromArgb(240, 240, 240)
                 ); 
-                Controls.Add(panelSettings);
+                Controls.Add(_panelSettings);
 
                 AddButtons();
 
@@ -80,13 +83,13 @@ namespace SwipeArena
         }
 
         /// <summary>
-        /// Tworzenie nowych przycisków 
+        /// Tworzenie interfejsu
         /// </summary>
         void AddButtons()
         {
 
             // Dodanie napisu "Ustawienia"
-            titleLabel = UIHelper.CreateLabel(
+            _titleLabel = UIHelper.CreateLabel(
                 title: "TitleLabel",
                 text: "Ustawienia",
                 font: BasicSettings.FontFamily,
@@ -96,40 +99,40 @@ namespace SwipeArena
                 location: new Point(ClientSize.Width / 2 - 100, 20),
                 fontStyle: FontStyle.Bold
                 );
-            panelSettings.Controls.Add(titleLabel);
+            _panelSettings.Controls.Add(_titleLabel);
 
             // Dodanie napisu "Zmiana głośności"
-            volumeLabel = UIHelper.CreateLabel(
+            _volumeLabel = UIHelper.CreateLabel(
                 title: "VolumeLabel",
-                text: $"Zmiana głośności [{Math.Round(settings.Volume * 100)}%]",
+                text: $"Zmiana głośności [{Math.Round(_settings.Volume * 100)}%]",
                 font: BasicSettings.FontFamily,
                 fontSize: BasicSettings.FontSize,
                 foreColor: Color.Black,
                 backColor: Color.Transparent,
                 location: new Point(ClientSize.Width / 2 - 100, ClientSize.Height / 3 - 50)
                 );
-            panelSettings.Controls.Add(volumeLabel);
+            _panelSettings.Controls.Add(_volumeLabel);
 
             // Suwak do ustawiania głośności muzyki
-            volumeMusic = new TrackBar
+            _volumeMusic = new TrackBar
             {
                 Minimum = 0,
                 Maximum = 100,
-                Value = (int)(settings.Volume * 100),
+                Value = (int)(_settings.Volume * 100),
                 TickFrequency = 10,
                 LargeChange = 10,
                 SmallChange = 1,
                 Size = new Size(ClientSize.Width / 3, 40),
                 Location = new Point(ClientSize.Width / 2 - 150, ClientSize.Height / 3)
             };
-            volumeMusic.Scroll += (s, e) =>
+            _volumeMusic.Scroll += (s, e) =>
             {
-                settings.Volume = volumeMusic.Value / 100.0;
-                volumeLabel.Text = $"Zmiana głośności [{Math.Round(settings.Volume * 100)}%]";
+                _settings.Volume = _volumeMusic.Value / 100.0;
+                _volumeLabel.Text = $"Zmiana głośności [{Math.Round(_settings.Volume * 100)}%]";
 
             };
 
-            panelSettings.Controls.Add(volumeMusic);
+            _panelSettings.Controls.Add(_volumeMusic);
 
             // Lista rozwijana zmiany rozdzielczości 
             var resolutions = new List<Point>
@@ -142,36 +145,36 @@ namespace SwipeArena
                 new Point(1920, 1080)
             };
 
-            changeResolution = new ComboBox
-            {
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = Color.White,
-                ForeColor = Color.Black,
-                Size = new Size(ClientSize.Width / 3, 40),
-                Location = new Point(ClientSize.Width / 2 - 150, ClientSize.Height / 2)
-            };
+            _changeResolution = UIHelper.CreateComboBox(
+                 title: "ChangeResolution",
+                 dropDownStyle: ComboBoxStyle.DropDownList,
+                 backColor: Color.White,
+                 foreColor: Color.Black,
+                 size: new Size(ClientSize.Width / 3, 40),
+                 location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height / 2)
+            );
 
 
             // Dodanie opcji rozdzielczości do listy rozwijanej
             foreach (var resolution in resolutions)
             {
-                changeResolution.Items.Add($"{resolution.X}x{resolution.Y}");
+                _changeResolution.Items.Add($"{resolution.X}x{resolution.Y}");
             }
 
             // Ustawienie domyślnej wartości
-            changeResolution.SelectedIndex = resolutions.FindIndex(r => r == settings.Resolution);
+            _changeResolution.SelectedIndex = resolutions.FindIndex(r => r == _settings.Resolution);
 
             // Obsługa zmiany rozdzielczości
-            changeResolution.SelectedIndexChanged += (s, e) =>
+            _changeResolution.SelectedIndexChanged += (s, e) =>
             {
-                var selectedResolution = resolutions[changeResolution.SelectedIndex];
-                settings.Resolution = selectedResolution;
-                Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+                var selectedResolution = resolutions[_changeResolution.SelectedIndex];
+                _settings.Resolution = selectedResolution;
+                Size = new Size(_settings.Resolution.X, _settings.Resolution.Y);
             };
-            panelSettings.Controls.Add(changeResolution);
+            _panelSettings.Controls.Add(_changeResolution);
 
             // ComboBox Funkcja AI
-            aiLabel = UIHelper.CreateLabel(
+            _aiLabel = UIHelper.CreateLabel(
                 title: "AiLabel",
                 text: "Funkcja AI",
                 font: BasicSettings.FontFamily,
@@ -180,25 +183,28 @@ namespace SwipeArena
                 backColor: Color.Transparent,
                 location: new Point(ClientSize.Width / 2 - 150, ClientSize.Height / 2 + 70)
             ); 
-            panelSettings.Controls.Add(aiLabel);
+            _panelSettings.Controls.Add(_aiLabel);
 
-            aiCheckBox = new System.Windows.Forms.CheckBox
+            _aiCheckBox = UIHelper.CreateCheckBox(
+                title: "AiCheckBox",
+                text: "Włącz funkcję AI",
+                backColor: Color.Transparent,
+                foreColor: Color.Black,
+                size: new Size(ClientSize.Width / 4, 40),
+                location: new Point(ClientSize.Width / 2, ClientSize.Height / 2 + 70),
+                isChecked: _settings.IsAIEnabled,
+                font: BasicSettings.FontFamily,
+                fontSize: BasicSettings.FontSize
+            );
+
+            _aiCheckBox.CheckedChanged += (s, e) =>
             {
-                Text = "Włącz funkcję AI", // Tekst obok CheckBoxa
-                BackColor = Color.Transparent,
-                ForeColor = Color.Black,
-                Size = new Size(ClientSize.Width / 4, 40),
-                Location = new Point(ClientSize.Width / 2, ClientSize.Height / 2 + 70),
-                Checked = settings.IsAIEnabled // Ustawienie domyślnego stanu
+                _settings.IsAIEnabled = _aiCheckBox.Checked; // Aktualizacja ustawienia na podstawie stanu CheckBoxa
             };
-            aiCheckBox.CheckedChanged += (s, e) =>
-            {
-                settings.IsAIEnabled = aiCheckBox.Checked; // Aktualizacja ustawienia na podstawie stanu CheckBoxa
-            };
-            panelSettings.Controls.Add(aiCheckBox);
+            _panelSettings.Controls.Add(_aiCheckBox);
 
             // Przycisk Wczytaj Ustawienia
-            loadSettingsButton = UIHelper.CreateButton(
+            _loadSettingsButton = UIHelper.CreateButton(
                 title: "LoadSettings",
                 text: "Wczytaj Ustawienia",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -209,15 +215,15 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            loadSettingsButton.Click += (s, e) =>
+            _loadSettingsButton.Click += (s, e) =>
             {
-                settings.LoadFromSelectedFile();
+                _settings.LoadFromSelectedFile();
                 UpdateSettingsUI();
             };
-            panelSettings.Controls.Add(loadSettingsButton);
+            _panelSettings.Controls.Add(_loadSettingsButton);
 
             // Przycisk Wczytaj Ustawienia
-            loadSaveButton = UIHelper.CreateButton(
+            _loadSaveButton = UIHelper.CreateButton(
                 title: "LoadSave",
                 text: "Wczytaj Zapis",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -228,11 +234,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            loadSaveButton.Click += (s, e) => _saveLoad.LoadFromSelectedFile();
-            panelSettings.Controls.Add(loadSaveButton);
+            _loadSaveButton.Click += (s, e) => _saveLoad.LoadFromSelectedFile();
+            _panelSettings.Controls.Add(_loadSaveButton);
 
             // Przycisk Zresetuj
-            resetButton = UIHelper.CreateButton(
+            _resetButton = UIHelper.CreateButton(
                 title: "ResetButton",
                 text: "Zresetuj",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -243,11 +249,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            resetButton.Click += ResetButton_Click;
-            panelSettings.Controls.Add(resetButton);
+            _resetButton.Click += ResetButton_Click;
+            _panelSettings.Controls.Add(_resetButton);
 
             // Przycisk Zapisz
-            saveButton = UIHelper.CreateButton(
+            _saveButton = UIHelper.CreateButton(
                 title: "SaveButton",
                 text: "Zapisz",
                 backColor: Color.FromArgb(67, 203, 107),
@@ -258,11 +264,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            saveButton.Click += SaveButton_Click;
-            panelSettings.Controls.Add(saveButton);
+            _saveButton.Click += SaveButton_Click;
+            _panelSettings.Controls.Add(_saveButton);
 
             // Przycisk Statystyki
-            statsButton = UIHelper.CreateButton(
+            _statsButton = UIHelper.CreateButton(
                 title: "StatsButton",
                 text: "Statystyki",
                 backColor: Color.FromArgb(66, 197, 230),
@@ -273,11 +279,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            statsButton.Click += StatsButton_Click;
-            panelSettings.Controls.Add(statsButton);
+            _statsButton.Click += StatsButton_Click;
+            _panelSettings.Controls.Add(_statsButton);
 
             // Przycisk Pomocy
-            helpButton = UIHelper.CreateButton(
+            _helpButton = UIHelper.CreateButton(
                 title: "HelpButton",
                 text: "Pomoc",
                 backColor: Color.FromArgb(66, 197, 230),
@@ -288,11 +294,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            helpButton.Click += HelpButton_Click;
-            panelSettings.Controls.Add(helpButton);
+            _helpButton.Click += HelpButton_Click;
+            _panelSettings.Controls.Add(_helpButton);
 
             // Przycisk Wróć do Menu
-            returnToMenuButton = UIHelper.CreateButton(
+            _returnToMenuButton = UIHelper.CreateButton(
                 title: "ReturnMenu",
                 text: "Wróć do Menu",
                 backColor: Color.FromArgb(255, 102, 102),
@@ -303,11 +309,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            returnToMenuButton.Click += ReturnToMenuButton_Click;
-            panelSettings.Controls.Add(returnToMenuButton);
+            _returnToMenuButton.Click += ReturnToMenuButton_Click;
+            _panelSettings.Controls.Add(_returnToMenuButton);
 
             // Przycisk Wyjście
-            exitButton = UIHelper.CreateButton(
+            _exitButton = UIHelper.CreateButton(
                 title: "ExitButton",
                 text: "Wyjdź z Gry",
                 backColor: Color.FromArgb(255, 102, 102),
@@ -318,11 +324,11 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
                 );
-            exitButton.Click += ExitButton_Click;
-            panelSettings.Controls.Add(exitButton);
+            _exitButton.Click += ExitButton_Click;
+            _panelSettings.Controls.Add(_exitButton);
 
             // Przycisk Powrotu
-            returnButton = UIHelper.CreateButton(
+            _returnButton = UIHelper.CreateButton(
                 title: "Return",
                 text: "Powrót",
                 backColor: Color.FromArgb(255, 102, 102),
@@ -333,10 +339,10 @@ namespace SwipeArena
                 fontSize: BasicSettings.FontSize,
                 fontStyle: FontStyle.Bold
             );
-            returnButton.Click += ExitSettingsButton_Click;
-            panelSettings.Controls.Add(returnButton);
+            _returnButton.Click += ExitSettingsButton_Click;
+            _panelSettings.Controls.Add(_returnButton);
 
-            var allControls = panelSettings.Controls.Cast<Control>().ToList();
+            var allControls = _panelSettings.Controls.Cast<Control>().ToList();
 
             if (ClientSize.Width < 1336)
             {
@@ -361,24 +367,27 @@ namespace SwipeArena
             };
         }
 
+        /// <summary>
+        /// Aktualizacja ustawień po zmianie
+        /// </summary>
         void UpdateSettingsUI()
         {
             // Aktualizacja suwaka głośności
-            volumeMusic.Value = (int)(settings.Volume * 100);
-            volumeLabel.Text = $"Zmiana głośności [{Math.Round(settings.Volume * 100)}%]";
+            _volumeMusic.Value = (int)(_settings.Volume * 100);
+            _volumeLabel.Text = $"Zmiana głośności [{Math.Round(_settings.Volume * 100)}%]";
 
             // Aktualizacja listy rozwijanej rozdzielczości
-            var resolutionIndex = changeResolution.Items.IndexOf($"{settings.Resolution.X}x{settings.Resolution.Y}");
+            var resolutionIndex = _changeResolution.Items.IndexOf($"{_settings.Resolution.X}x{_settings.Resolution.Y}");
             if (resolutionIndex >= 0)
             {
-                changeResolution.SelectedIndex = resolutionIndex;
+                _changeResolution.SelectedIndex = resolutionIndex;
             }
 
             // Aktualizacja stanu CheckBoxa AI
-            aiCheckBox.Checked = settings.IsAIEnabled;
+            _aiCheckBox.Checked = _settings.IsAIEnabled;
 
             // Aktualizacja rozmiaru okna
-            Size = new Size(settings.Resolution.X, settings.Resolution.Y);
+            Size = new Size(_settings.Resolution.X, _settings.Resolution.Y);
         }
 
         /// <summary>
@@ -397,7 +406,7 @@ namespace SwipeArena
 
             if (result == DialogResult.Yes)
             {
-                settings.SaveToFile();
+                _settings.SaveToFile();
             }
             else if (result == DialogResult.Cancel)
             {
@@ -437,7 +446,7 @@ namespace SwipeArena
 
             if (result == DialogResult.Yes)
             {
-                settings.SaveToFile();
+                _settings.SaveToFile();
             }
             else if (result == DialogResult.Cancel)
             {
@@ -465,7 +474,7 @@ namespace SwipeArena
 
             if (result == DialogResult.Yes)
             {
-                settings.SaveToFile();
+                _settings.SaveToFile();
             }
             else if (result == DialogResult.Cancel)
             {
@@ -490,7 +499,7 @@ namespace SwipeArena
                 saveLoad.Load();
                 saveLoad.Save();
 
-                settings.SaveToFile();
+                _settings.SaveToFile();
 
                 MessageBox.Show("Postęp i ustawienia zostały zapisane.", "Zapis postępu", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -506,8 +515,8 @@ namespace SwipeArena
         void ArrangeSettingsLayout()
         {
             // Panel główny
-            panelSettings.Size = new Size(ClientSize.Width - 40, ClientSize.Height - 40);
-            panelSettings.Location = new Point(20, 20);
+            _panelSettings.Size = new Size(ClientSize.Width - 40, ClientSize.Height - 40);
+            _panelSettings.Location = new Point(20, 20);
         }
 
 
@@ -530,7 +539,7 @@ namespace SwipeArena
                 if (result == DialogResult.Yes)
                 {
                     
-                    settings.Reset();
+                    _settings.Reset();
 
                     var result2 = MessageBox.Show(
                     "Czy chcesz zresetować zapis gry?",

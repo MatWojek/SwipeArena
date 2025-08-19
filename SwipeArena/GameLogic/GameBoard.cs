@@ -9,17 +9,20 @@ using System.Windows.Forms;
 
 namespace SwipeArena.GameLogic
 {
-    public class GameBoard
+    /// <summary>
+    /// Klasa tworząca i manipulująca planszą gry
+    /// </summary>
+    public class GameBoard : IGameBoard
     {
 
-        private static readonly Random random = new Random();
+        private static readonly Random _random = new Random();
 
         IGameElement[,] _grid;
         List<IGameElement> _elementTypes = new();
-        int rows, cols;
+        int _rows, _cols;
 
-        public int Rows => rows;
-        public int Cols => cols;
+        public int Rows => _rows;
+        public int Cols => _cols;
         public IGameElement[,] Grid
         {
             get => _grid;
@@ -82,9 +85,17 @@ namespace SwipeArena.GameLogic
             _grid[y, x] = element;
         }
 
-        public int GetRows() => rows;
+        /// <summary>
+        /// Pobieranie wierszy
+        /// </summary>
+        /// <returns></returns>
+        public int GetRows() => _rows;
 
-        public int GetCols() => cols; 
+        /// <summary>
+        /// Pobieranie kolumn
+        /// </summary>
+        /// <returns></returns>
+        public int GetCols() => _cols; 
 
         /// <summary>
         /// Określenie wielkości planszy na podstawie poziomu
@@ -96,13 +107,13 @@ namespace SwipeArena.GameLogic
 
             if (CurrentLevel >= 6)
             {
-                rows = random.Next(4, 8);
-                cols = random.Next(4, 8);
+                _rows = _random.Next(4, 8);
+                _cols = _random.Next(4, 8);
             }
             else
             {
-                rows = random.Next(3, 3 + CurrentLevel);
-                cols = random.Next(3, 3 + CurrentLevel);
+                _rows = _random.Next(3, 3 + CurrentLevel);
+                _cols = _random.Next(3, 3 + CurrentLevel);
             }
 
         }
@@ -113,11 +124,11 @@ namespace SwipeArena.GameLogic
         /// <returns></returns>
         public int ElementSize()
         {
-            if (rows <= 4 && cols <= 5)
+            if (_rows <= 4 && _cols <= 5)
             {
                 return 128;
             }
-            else if (rows > 4 && cols < 6 && rows < 5)
+            else if (_rows > 4 && _cols < 6 && _rows < 5)
             {
                 return 96;
             }
@@ -132,24 +143,23 @@ namespace SwipeArena.GameLogic
         /// </summary>
         public void GenerateLevel(List<IGameElement> availableElements)
         {
-            if (rows == 0 || cols == 0)
+            if (_rows == 0 || _cols == 0)
                 throw new InvalidOperationException("Rozmiar planszy nie został ustawiony.");
             if (availableElements == null || availableElements.Count == 0)
                 throw new ArgumentException("Brak dostępnych elementów do generowania planszy.");
 
             _elementTypes = availableElements;
-            _grid = new IGameElement[rows, cols];
+            _grid = new IGameElement[_rows, _cols];
 
-            for (int y = 0; y < rows; y++)
+            for (int y = 0; y < _rows; y++)
             {
-                for (int x = 0; x < cols; x++)
+                for (int x = 0; x < _cols; x++)
                 {
-                    var element = _elementTypes[random.Next(_elementTypes.Count)].Clone();
+                    var element = _elementTypes[_random.Next(_elementTypes.Count)].Clone();
                     _grid[y, x] = element;
                 }
             }
         }
-
 
         /// <summary>
         /// Tasowanie planszy
@@ -158,25 +168,25 @@ namespace SwipeArena.GameLogic
         {
             List<IGameElement> elements = new List<IGameElement>();
 
-            for (int y = 0; y < rows; y++)
+            for (int y = 0; y < _rows; y++)
             {
-                for (int x = 0; x < cols; x++)
+                for (int x = 0; x < _cols; x++)
                 {
                     elements.Add(_grid[y, x]);
                 }
             }
 
-            int maxAttempts = 1000;
+            int maxAttempts = 50;
             int attempts = 0;
 
             do
             {
-                elements = elements.OrderBy(e => random.Next()).ToList();
+                elements = elements.OrderBy(e => _random.Next()).ToList();
 
                 int index = 0;
-                for (int y = 0; y < rows; y++)
+                for (int y = 0; y < _rows; y++)
                 {
-                    for (int x = 0; x < cols; x++)
+                    for (int x = 0; x < _cols; x++)
                     {
                         _grid[y, x] = elements[index++];
                     }
@@ -184,20 +194,21 @@ namespace SwipeArena.GameLogic
 
                 attempts++;
 
-            } while ((!hasValidMoveFunc() || findMatchesFunc().Count > 0) && attempts < maxAttempts);
+            } while (( !hasValidMoveFunc() || findMatchesFunc().Count > 0 ) && attempts<maxAttempts);
+
         }
 
-        /// <summary>
-        /// Dodawanie pojedynczego elementu do planszy i interfejsu
-        /// </summary>
-        /// <param name="typeIndex"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public void AddElement(int typeIndex, int x, int y)
+    /// <summary>
+    /// Dodawanie pojedynczego elementu do planszy i interfejsu
+    /// </summary>
+    /// <param name="typeIndex"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    public void AddElement(int typeIndex, int x, int y)
         {
             if (typeIndex < 0 || typeIndex >= _elementTypes.Count)
                 throw new ArgumentOutOfRangeException(nameof(typeIndex));
-            if (x < 0 || x >= cols || y < 0 || y >= rows)
+            if (x < 0 || x >= _cols || y < 0 || y >= _rows)
                 throw new ArgumentOutOfRangeException("Pozycja poza planszą.");
 
             _grid[y, x] = _elementTypes[typeIndex].Clone();

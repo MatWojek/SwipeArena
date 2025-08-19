@@ -127,7 +127,6 @@
 
   <ItemGroup>
     <Folder Include="music\" />
-    <Folder Include="Forms\" />
   </ItemGroup>
 
   <ItemGroup>

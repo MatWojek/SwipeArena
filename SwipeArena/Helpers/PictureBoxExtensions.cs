@@ -6,8 +6,17 @@ using System.Threading.Tasks;
 
 namespace SwipeArena.Helpers
 {
+    /// <summary>
+    /// Rozszerzenie PictureBox
+    /// </summary>
     public static class PictureBoxExtensions
     {
+        /// <summary>
+        /// Dodanie do elementu w grze dodatkowych właściwości
+        /// </summary>
+        /// <param name="pic"></param>
+        /// <param name="form"></param>
+        /// <returns></returns>
         public static PictureBox WithEventHandlers(this PictureBox pic, LevelForm form)
         {
             pic.MouseDown += form.Pic_MouseDown;
