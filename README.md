@@ -65,31 +65,31 @@ Plik: `AIHelper.cs`
 
 ### Widok Ekranu Startowego Gry
 
-<img alt="ekran_startowy" src="screenshots/start.png" width="300">
+<img alt="ekran_startowy" src="screenshots/start.png" width="400">
 
 ### Widok Menu Gry
 
-<img alt="menu" src="screenshots/menu.png" width="300">
+<img alt="menu" src="screenshots/menu.png" width="400">
 
 ### Widok Wybierania Poziomu w Grze
 
-<img alt="wybieranie_poziomu" src="screenshots/select_level.png" width="300">
+<img alt="wybieranie_poziomu" src="screenshots/select_level.png" width="400">
 
 ### Widok Poziomu
 
-<img alt="poziom" src="screenshots/level.png" width="300">
+<img alt="poziom" src="screenshots/level.png" width="400">
 
 ### Widok Wygranej
 
-<img alt="wygrana" src="screenshots/win.png" width="300">
+<img alt="wygrana" src="screenshots/win.png" width="400">
 
 ### Widok Przegranej 
 
-<img alt="przegrana" src="screenshots/lost.png" width="300">
+<img alt="przegrana" src="screenshots/lost.png" width="400">
 
 ### Widok Ustawień
 
-<img alt="ustawienia" src="screenshots/settings.png" width="300">
+<img alt="ustawienia" src="screenshots/settings.png" width="400">
 
 
 ---
