@@ -66,7 +66,7 @@ Plik: `AIHelper.cs`
 ### Widok Ekranu Startowego Gry
 
 <p align="center">
-  <img alt="ekran_startowy" src="screenshots/start.png" width="2em">
+  <img alt="ekran_startowy" src="screenshots/start.png" width="2rem">
 </p>
 
 ### Widok Menu Gry
