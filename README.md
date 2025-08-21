@@ -65,45 +65,32 @@ Plik: `AIHelper.cs`
 
 ### Widok Ekranu Startowego Gry
 
-<p align="center">
-  <img alt="ekran_startowy" src="screenshots/start.png" width="300">
-</p>
+<img alt="ekran_startowy" src="screenshots/start.png" width="300">
 
 ### Widok Menu Gry
 
-<p align="center">
-  <img alt="menu" src="screenshots/menu.png" width="300">
-</p>
+<img alt="menu" src="screenshots/menu.png" width="300">
 
 ### Widok Wybierania Poziomu w Grze
 
-<p align="center">
-  <img alt="wybieranie_poziomu" src="screenshots/select_level.png" width="300">
-</p>
+<img alt="wybieranie_poziomu" src="screenshots/select_level.png" width="300">
 
 ### Widok Poziomu
 
-<p align="center">
-  <img alt="poziom" src="screenshots/level.png" width="300">
-</p>
+<img alt="poziom" src="screenshots/level.png" width="300">
 
 ### Widok Wygranej
 
-<p align="center">
-  <img alt="wygrana" src="screenshots/win.png" width="300">
-</p>
+<img alt="wygrana" src="screenshots/win.png" width="300">
 
 ### Widok Przegranej 
 
-<p align="center">
-  <img alt="przegrana" src="screenshots/lost.png" width="300">
-</p>
+<img alt="przegrana" src="screenshots/lost.png" width="300">
 
 ### Widok Ustawień
 
-<p align="center">
-  <img alt="ustawienia" src="screenshots/settings.png" width="300">
-</p>
+<img alt="ustawienia" src="screenshots/settings.png" width="300">
+
 
 ---
 
