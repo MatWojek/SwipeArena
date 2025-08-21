@@ -63,6 +63,34 @@ Plik: `AIHelper.cs`
 
 ## 📸 Screenshoty
 
+### Widok Ekranu Startowego Gry
+
+![ekran_startowy](screenshots/start.png)
+
+### Widok Menu Gry
+
+![menu](screenshots/menu.png)
+
+### Widok Wybierania Poziomu w Grze
+
+![wybieranie_poziomu](screenshots/select_level.png)
+
+### Widok Poziomu
+
+![poziom](screenshots/level.png)
+
+### Widok Wygranej
+
+![wygrana](screenshots/win.png)
+
+### Widok Przegranej 
+
+![przegrana](screenshots/lost.png)
+
+### Widok Ustawień
+
+![ustawienia](screenshots/settings.png)
+
 ---
 
 ## 👨‍💻 Autor
